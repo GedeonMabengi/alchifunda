@@ -1,0 +1,4100 @@
+ALCHIFUNDA
+
+Un systeme pour apprendr la chimie grace a l'ia.
+Voici un appercu des besoins initiale bien que cela soit
+rediger avec des allures tres techniques.
+
+Avant de creer le systeme complet destinner a l'aprentissage de la chimie par l'ia,
+il faudrait delimiter le systeme et se positionner pour marquer la difference entre
+le fait de faire des prompts directement dans une interfacs d'ia.
+
+Le systeme ne se concentre qu'a enseigner la chimie destiner aux eleves du nivau du lycee
+pour la RDC.
+
+Etape 1
+-------
+Pour y arriver, nous recuperons le programme nationnale de la chimie pour le secondaire et
+humanite generale de la RDC. Nous demandons a l'ia de generer du contenue a enseigner pour chaque
+classe puis l'ensemble du contenue genere est conserve dans notre basedes donnees et ce contenue
+sera proposer aux utilisateurs apprenants selon leur nivau (c'est l'ia qui determinera le nivau
+des apprennants)
+
+Cette premiere etape est cruciale avant de passer a toute etape de codage.
+
+Etape 2
+-------
+L'ia sera utiliser pour determine le niveau des apprenants et leurs preferences (cela sera fait par
+des questions reponses tel que l'age, le temps a disposer pour etudier, les connaissances actuelles,...
+d'une maniere similaire a l'utilisation de DUOLINGO avant de commencer l'apprentissage)
+, cela dans le but de proposer du contenue adapter a chaque user et au rythme de son choix.
+Une fois cela fait l'ia peut proposer du contenue deja cree pour notre systeme,
+provenant de la base de donnees.
+
+Etape 3
+-------
+L'ia peut etre utiliser pour :
+-reformuler aux besoins (Par exemple pour s'adapter au ton prefere de l'utilisateur,...)
+-Poser des questions de controle (verification des connances) et de corriger les controles donne a l'aprenant.
+-Determiner le niveau de l'aprennant apres chaque lecon et controle passer
+-Donner des scores a l'apprenant
+-Determiner et proposer la suite des lecons a suivre apres une precedantes
+- etc.
+
+Pour ce systeme dansun premier temps des lecons theorique sans passer par le laboratoire seront enseigner
+cela avec des demontrations mathematique expliquer en details.
+
+Voici le parcours utilisateur que j'ai pensé pour ce systeme :
+
+# ALCHIFUNDA - Système d'Apprentissage de la Chimie par IA
+
+---
+
+## Parcours Utilisateur (User Journey)
+
+### Phase 1 : Découverte et Inscription
+
+L'utilisateur arrive sur la plateforme ALCHIFUNDA. Il découvre une page d'accueil qui présente
+brièvement le système : apprendre la chimie adaptée au programme congolais avec l'aide de l'IA.
+Il s'inscrit en fournissant des informations de base telles que son nom, son email et un mot de passe. À ce stade, aucune question sur son niveau n'est encore posée.
+
+### Phase 2 : Évaluation Initiale (Style Duolingo)
+
+Immédiatement après l'inscription, l'utilisateur entre dans un processus d'évaluation conversationnel guidé par l'IA. Cette évaluation se déroule en plusieurs temps. D'abord, le système recueille le profil personnel de l'apprenant : son âge, sa classe actuelle (3ème, 4ème, 5ème ou 6ème secondaire), son option (scientifique, littéraire, etc.) et le temps qu'il peut consacrer à l'étude par jour ou par semaine.
+
+Ensuite vient le diagnostic des connaissances. L'IA pose entre 5 et 10 questions progressives couvrant les bases de la chimie : la matière et ses états, les atomes et molécules, le tableau périodique, les réactions chimiques simples. Ces questions ne sont pas punitives mais servent à situer l'apprenant.
+
+Enfin, le système explore les préférences d'apprentissage : l'utilisateur préfère-t-il des explications courtes ou détaillées ? Aime-t-il les exemples de la vie quotidienne ? Souhaite-t-il un ton formel ou décontracté ?
+
+À la fin de cette phase, l'IA génère un profil apprenant comprenant son niveau estimé, son point de départ dans le programme et son rythme recommandé.
+
+### Phase 3 : Tableau de Bord Personnel
+
+L'utilisateur accède à son espace personnel. Il y trouve sa progression globale affichée visuellement, les leçons recommandées par l'IA selon son niveau, son historique d'apprentissage avec les leçons complétées et les scores obtenus, ainsi que ses objectifs personnalisés (par exemple, terminer le chapitre sur les liaisons chimiques cette semaine).
+
+### Phase 4 : Apprentissage d'une Leçon
+
+Lorsque l'utilisateur sélectionne une leçon, il entre dans un module structuré. La leçon commence par une introduction qui présente le contexte et les objectifs. Suit le contenu théorique, issu de la base de données mais reformulé par l'IA selon les préférences de l'utilisateur. Pour les concepts nécessitant des calculs, des démonstrations mathématiques détaillées sont fournies étape par étape. Des exemples concrets, souvent tirés du contexte congolais, illustrent les notions. Des mini-quiz de 2 à 3 questions vérifient la compréhension au fil de la leçon. L'utilisateur peut à tout moment poser des questions à l'IA pour obtenir des clarifications.
+
+### Phase 5 : Contrôle de Fin de Leçon
+
+Après chaque leçon, un contrôle formel est proposé. Il comprend entre 5 et 10 questions de types variés : QCM, vrai/faux, réponses courtes et exercices de calcul. L'IA corrige automatiquement et fournit des explications pour chaque réponse, qu'elle soit correcte ou incorrecte. Un score est attribué et enregistré dans le profil de l'utilisateur.
+
+### Phase 6 : Réévaluation et Progression
+
+Après chaque contrôle, l'IA réévalue le niveau de l'apprenant. Si le score est satisfaisant (par exemple supérieur à 70%), la leçon suivante est débloquée. Si le score est insuffisant, l'IA propose une révision ciblée sur les points faibles identifiés. L'utilisateur peut également choisir de refaire le contrôle.
+
+### Phase 7 : Suivi Continu
+
+Au fil du temps, l'utilisateur peut consulter ses statistiques détaillées, voir son évolution de niveau, recevoir des recommandations pour renforcer ses points faibles et obtenir des encouragements de l'IA pour maintenir sa motivation.
+
+---
+
+## Schéma Visuel du Parcours
+
+```
+┌─────────────────┐
+│   INSCRIPTION   │
+└────────┬────────┘
+         ▼
+┌─────────────────────────────┐
+│   ÉVALUATION INITIALE (IA)  │
+│  • Profil personnel         │
+│  • Test de niveau           │
+│  • Préférences              │
+└────────────┬────────────────┘
+             ▼
+┌─────────────────────────────┐
+│     TABLEAU DE BORD         │
+│  • Progression              │
+│  • Leçons recommandées      │
+│  • Historique               │
+└────────────┬────────────────┘
+             ▼
+┌─────────────────────────────┐
+│        LEÇON                │
+│  • Contenu théorique        │
+│  • Démonstrations math      │
+│  • Mini-quiz intégrés       │
+│  • Questions à l'IA         │
+└────────────┬────────────────┘
+             ▼
+┌─────────────────────────────┐
+│   CONTRÔLE DE FIN           │
+│  • Évaluation               │
+│  • Correction IA            │
+│  • Score                    │
+└────────────┬────────────────┘
+             ▼
+      ┌──────┴──────┐
+      ▼             ▼
+┌──────────┐  ┌──────────────┐
+│ Réussite │  │    Échec     │
+│ → Suite  │  │ → Révision   │
+└──────────┘  └──────────────┘
+```
+
+---
+
+J'ai egalement pensé a la base des donnees et la Voici :
+
+# ALCHIFUNDA - Conception de la Base de Données
+
+Voici l'architecture complète de la base de données avec les migrations Laravel.
+J'ai structuré les tables en groupes logiques pour une meilleure compréhension.
+
+---
+
+## Schéma Relationnel Global
+
+```
+┌─────────────────┐       ┌─────────────────────┐       ┌─────────────────┐
+│     users       │       │   user_profiles     │       │  user_preferences│
+│─────────────────│       │─────────────────────│       │─────────────────│
+│ id              │◄──────│ user_id             │       │ user_id         │
+│ name            │       │ age                 │       │ tone            │
+│ email           │       │ current_level_id    │       │ detail_level    │
+│ password        │       │ study_time_per_day  │       │ example_style   │
+└────────┬────────┘       │ school_option       │       └─────────────────┘
+         │                └─────────────────────┘
+         │
+         │        ┌─────────────────────┐
+         │        │      levels         │
+         │        │─────────────────────│
+         │        │ id                  │
+         │        │ name (3ème, 4ème...)│
+         │        │ order               │
+         │        └──────────┬──────────┘
+         │                   │
+         │                   ▼
+         │        ┌─────────────────────┐       ┌─────────────────────┐
+         │        │     chapters        │       │      lessons        │
+         │        │─────────────────────│       │─────────────────────│
+         │        │ id                  │◄──────│ chapter_id          │
+         │        │ level_id            │       │ id                  │
+         │        │ title               │       │ title               │
+         │        │ order               │       │ content             │
+         │        └─────────────────────┘       │ math_demonstrations │
+         │                                      │ order               │
+         │                                      └──────────┬──────────┘
+         │                                                 │
+         ▼                                                 ▼
+┌─────────────────────┐                        ┌─────────────────────┐
+│  user_lesson_progress│                        │    assessments      │
+│─────────────────────│                        │─────────────────────│
+│ user_id             │                        │ id                  │
+│ lesson_id           │                        │ lesson_id           │
+│ status              │                        │ type (quiz/control) │
+│ started_at          │                        └──────────┬──────────┘
+│ completed_at        │                                   │
+└─────────────────────┘                                   ▼
+                                               ┌─────────────────────┐
+┌─────────────────────┐                        │     questions       │
+│ user_assessment_results│                      │─────────────────────│
+│─────────────────────│                        │ id                  │
+│ user_id             │                        │ assessment_id       │
+│ assessment_id       │                        │ question_text       │
+│ score               │                        │ question_type       │
+│ passed              │                        │ options (JSON)      │
+│ ai_feedback         │                        │ correct_answer      │
+└─────────────────────┘                        │ points              │
+                                               └─────────────────────┘
+```
+
+---
+
+## Migrations Laravel
+
+### 1. Table des Utilisateurs (modification de la table par défaut)
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('users', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password');
+            $table->boolean('initial_assessment_completed')->default(false);
+            $table->boolean('is_active')->default(true);
+            $table->timestamp('last_login_at')->nullable();
+            $table->rememberToken();
+            $table->timestamps();
+            $table->softDeletes();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('users');
+    }
+};
+```
+
+### 2. Table des Niveaux (Classes)
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('levels', function (Blueprint $table) {
+            $table->id();
+            $table->string('name'); // 3ème secondaire, 4ème secondaire, etc.
+            $table->string('code')->unique(); // 3SEC, 4SEC, 5HUM, 6HUM
+            $table->text('description')->nullable();
+            $table->integer('order'); // Pour ordonner les niveaux
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('levels');
+    }
+};
+```
+
+### 3. Table des Profils Utilisateurs
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('user_profiles', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->integer('age')->nullable();
+            $table->foreignId('declared_level_id')->nullable()->constrained('levels')->onDelete('set null'); // Niveau déclaré par l'utilisateur
+            $table->foreignId('assessed_level_id')->nullable()->constrained('levels')->onDelete('set null'); // Niveau évalué par l'IA
+            $table->integer('study_time_per_day')->nullable(); // En minutes
+            $table->integer('study_days_per_week')->nullable();
+            $table->string('school_option')->nullable(); // Scientifique, Littéraire, Commercial, etc.
+            $table->string('school_name')->nullable();
+            $table->string('city')->nullable();
+            $table->string('province')->nullable();
+            $table->integer('global_score')->default(0); // Score global de l'apprenant
+            $table->integer('total_lessons_completed')->default(0);
+            $table->integer('total_assessments_passed')->default(0);
+            $table->integer('current_streak_days')->default(0); // Jours consécutifs d'apprentissage
+            $table->integer('longest_streak_days')->default(0);
+            $table->date('last_activity_date')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('user_profiles');
+    }
+};
+```
+
+### 4. Table des Préférences Utilisateurs
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('user_preferences', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->enum('tone', ['formal', 'casual', 'friendly'])->default('friendly'); // Ton préféré
+            $table->enum('detail_level', ['concise', 'moderate', 'detailed'])->default('moderate'); // Niveau de détail
+            $table->enum('example_style', ['everyday', 'scientific', 'mixed'])->default('mixed'); // Style d'exemples
+            $table->boolean('show_math_steps')->default(true); // Afficher les étapes mathématiques détaillées
+            $table->boolean('enable_notifications')->default(true);
+            $table->boolean('enable_reminders')->default(true);
+            $table->time('preferred_study_time')->nullable(); // Heure préférée pour étudier
+            $table->string('language')->default('fr'); // Langue (fr pour français)
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('user_preferences');
+    }
+};
+```
+
+### 5. Table des Chapitres
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('chapters', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('level_id')->constrained()->onDelete('cascade');
+            $table->string('title');
+            $table->string('slug')->unique();
+            $table->text('description')->nullable();
+            $table->text('objectives')->nullable(); // Objectifs du chapitre (JSON ou texte)
+            $table->integer('order'); // Ordre dans le niveau
+            $table->integer('estimated_duration_minutes')->nullable(); // Durée estimée totale
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+            
+            $table->index(['level_id', 'order']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('chapters');
+    }
+};
+```
+
+### 6. Table des Leçons
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('lessons', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('chapter_id')->constrained()->onDelete('cascade');
+            $table->string('title');
+            $table->string('slug')->unique();
+            $table->text('introduction')->nullable(); // Introduction de la leçon
+            $table->longText('content'); // Contenu principal de la leçon
+            $table->longText('math_demonstrations')->nullable(); // Démonstrations mathématiques (JSON ou Markdown)
+            $table->longText('practical_examples')->nullable(); // Exemples pratiques (JSON)
+            $table->text('summary')->nullable(); // Résumé de la leçon
+            $table->json('keywords')->nullable(); // Mots-clés pour la recherche
+            $table->integer('order'); // Ordre dans le chapitre
+            $table->integer('estimated_duration_minutes')->default(30);
+            $table->enum('difficulty', ['easy', 'medium', 'hard'])->default('medium');
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+            
+            $table->index(['chapter_id', 'order']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('lessons');
+    }
+};
+```
+
+### 7. Table des Évaluations (Quiz et Contrôles)
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('assessments', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('lesson_id')->constrained()->onDelete('cascade');
+            $table->string('title');
+            $table->enum('type', ['mini_quiz', 'end_lesson_control', 'chapter_exam'])->default('end_lesson_control');
+            $table->text('instructions')->nullable();
+            $table->integer('total_points')->default(100);
+            $table->integer('passing_score')->default(70); // Score minimum pour réussir (en %)
+            $table->integer('time_limit_minutes')->nullable(); // Limite de temps (null = illimité)
+            $table->integer('max_attempts')->default(3); // Nombre maximum de tentatives
+            $table->boolean('shuffle_questions')->default(true);
+            $table->boolean('show_correct_answers')->default(true); // Montrer les bonnes réponses après
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('assessments');
+    }
+};
+```
+
+### 8. Table des Questions
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('questions', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('assessment_id')->constrained()->onDelete('cascade');
+            $table->text('question_text');
+            $table->enum('question_type', ['mcq', 'true_false', 'short_answer', 'calculation', 'fill_blank'])->default('mcq');
+            $table->json('options')->nullable(); // Pour les QCM : ["A" => "Option 1", "B" => "Option 2", ...]
+            $table->text('correct_answer'); // Réponse correcte
+            $table->text('explanation')->nullable(); // Explication de la réponse
+            $table->integer('points')->default(10);
+            $table->integer('order');
+            $table->enum('difficulty', ['easy', 'medium', 'hard'])->default('medium');
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+            
+            $table->index(['assessment_id', 'order']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('questions');
+    }
+};
+```
+
+### 9. Table de Progression des Leçons par Utilisateur
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('user_lesson_progress', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('lesson_id')->constrained()->onDelete('cascade');
+            $table->enum('status', ['not_started', 'in_progress', 'completed', 'revision_needed'])->default('not_started');
+            $table->integer('progress_percentage')->default(0); // 0-100
+            $table->integer('time_spent_minutes')->default(0); // Temps passé sur la leçon
+            $table->timestamp('started_at')->nullable();
+            $table->timestamp('completed_at')->nullable();
+            $table->timestamp('last_accessed_at')->nullable();
+            $table->integer('access_count')->default(0); // Nombre de fois accédée
+            $table->text('ai_notes')->nullable(); // Notes générées par l'IA sur la progression
+            $table->timestamps();
+            
+            $table->unique(['user_id', 'lesson_id']);
+            $table->index(['user_id', 'status']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('user_lesson_progress');
+    }
+};
+```
+
+### 10. Table des Résultats d'Évaluations
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('user_assessment_results', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('assessment_id')->constrained()->onDelete('cascade');
+            $table->integer('score'); // Score obtenu en points
+            $table->integer('percentage'); // Score en pourcentage
+            $table->boolean('passed'); // Réussi ou non
+            $table->integer('attempt_number')->default(1); // Numéro de tentative
+            $table->integer('time_taken_minutes')->nullable(); // Temps pris
+            $table->json('answers')->nullable(); // Réponses données par l'utilisateur
+            $table->longText('ai_feedback')->nullable(); // Feedback généré par l'IA
+            $table->json('weak_points')->nullable(); // Points faibles identifiés
+            $table->json('strong_points')->nullable(); // Points forts identifiés
+            $table->timestamp('started_at');
+            $table->timestamp('completed_at')->nullable();
+            $table->timestamps();
+            
+            $table->index(['user_id', 'assessment_id']);
+            $table->index(['user_id', 'passed']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('user_assessment_results');
+    }
+};
+```
+
+### 11. Table des Réponses aux Questions (Détail)
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('user_question_answers', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_assessment_result_id')->constrained('user_assessment_results')->onDelete('cascade');
+            $table->foreignId('question_id')->constrained()->onDelete('cascade');
+            $table->text('user_answer')->nullable();
+            $table->boolean('is_correct');
+            $table->integer('points_earned')->default(0);
+            $table->text('ai_explanation')->nullable(); // Explication personnalisée par l'IA
+            $table->timestamps();
+            
+            $table->index(['user_assessment_result_id', 'question_id']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('user_question_answers');
+    }
+};
+```
+
+### 12. Table des Questions de l'Évaluation Initiale
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('initial_assessment_questions', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('level_id')->nullable()->constrained()->onDelete('set null'); // Niveau ciblé par la question
+            $table->text('question_text');
+            $table->enum('question_type', ['mcq', 'true_false', 'short_answer'])->default('mcq');
+            $table->json('options')->nullable();
+            $table->text('correct_answer');
+            $table->integer('difficulty_score')->default(1); // 1-10, pour calibrer le niveau
+            $table->string('topic')->nullable(); // Sujet couvert (atomes, réactions, etc.)
+            $table->integer('order');
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('initial_assessment_questions');
+    }
+};
+```
+
+### 13. Table des Résultats de l'Évaluation Initiale
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('user_initial_assessments', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->json('responses'); // Toutes les réponses données
+            $table->integer('total_score');
+            $table->foreignId('recommended_level_id')->nullable()->constrained('levels')->onDelete('set null');
+            $table->json('topic_scores')->nullable(); // Scores par sujet
+            $table->longText('ai_analysis')->nullable(); // Analyse détaillée par l'IA
+            $table->json('recommended_starting_chapters')->nullable(); // Chapitres recommandés pour commencer
+            $table->timestamp('completed_at');
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('user_initial_assessments');
+    }
+};
+```
+
+### 14. Table de l'Historique des Conversations IA
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('ai_conversations', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('lesson_id')->nullable()->constrained()->onDelete('set null');
+            $table->enum('context', ['lesson_help', 'initial_assessment', 'general_question', 'feedback'])->default('lesson_help');
+            $table->longText('user_message');
+            $table->longText('ai_response');
+            $table->json('metadata')->nullable(); // Informations additionnelles
+            $table->timestamps();
+            
+            $table->index(['user_id', 'context']);
+            $table->index(['user_id', 'lesson_id']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('ai_conversations');
+    }
+};
+```
+
+### 15. Table des Objectifs et Récompenses
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('achievements', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('code')->unique();
+            $table->text('description');
+            $table->string('icon')->nullable(); // Nom de l'icône ou chemin
+            $table->enum('type', ['lesson', 'chapter', 'streak', 'score', 'special'])->default('lesson');
+            $table->json('criteria'); // Critères pour obtenir le badge (JSON)
+            $table->integer('points_reward')->default(0);
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('achievements');
+    }
+};
+```
+
+### 16. Table des Récompenses Obtenues par les Utilisateurs
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('user_achievements', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('achievement_id')->constrained()->onDelete('cascade');
+            $table->timestamp('earned_at');
+            $table->timestamps();
+            
+            $table->unique(['user_id', 'achievement_id']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('user_achievements');
+    }
+};
+```
+
+### 17. Table des Notifications
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('notifications', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('title');
+            $table->text('message');
+            $table->enum('type', ['reminder', 'achievement', 'progress', 'system', 'encouragement'])->default('system');
+            $table->json('data')->nullable(); // Données additionnelles
+            $table->boolean('is_read')->default(false);
+            $table->timestamp('read_at')->nullable();
+            $table->timestamps();
+            
+            $table->index(['user_id', 'is_read']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('notifications');
+    }
+};
+```
+
+### 18. Table de Suivi des Sessions d'Étude
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('study_sessions', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->timestamp('started_at');
+            $table->timestamp('ended_at')->nullable();
+            $table->integer('duration_minutes')->nullable();
+            $table->integer('lessons_viewed')->default(0);
+            $table->integer('assessments_completed')->default(0);
+            $table->integer('questions_asked')->default(0); // Questions posées à l'IA
+            $table->json('activity_log')->nullable(); // Log détaillé des activités
+            $table->timestamps();
+            
+            $table->index(['user_id', 'started_at']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('study_sessions');
+    }
+};
+```
+
+---
+
+## Seeders pour les Données de Base
+
+### Seeder pour les Niveaux
+
+```php
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+
+class LevelSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $levels = [
+            [
+                'name' => '3ème Secondaire',
+                'code' => '3SEC',
+                'description' => 'Troisième année du cycle secondaire - Introduction à la chimie',
+                'order' => 1,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => '4ème Secondaire',
+                'code' => '4SEC',
+                'description' => 'Quatrième année du cycle secondaire - Chimie fondamentale',
+                'order' => 2,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => '5ème Humanités',
+                'code' => '5HUM',
+                'description' => 'Cinquième année des humanités générales - Chimie approfondie',
+                'order' => 3,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => '6ème Humanités',
+                'code' => '6HUM',
+                'description' => 'Sixième année des humanités générales - Chimie avancée et préparation aux études supérieures',
+                'order' => 4,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ];
+
+        DB::table('levels')->insert($levels);
+    }
+}
+```
+
+### Seeder pour les Récompenses de Base
+
+```php
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+
+class AchievementSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $achievements = [
+            [
+                'name' => 'Premier Pas',
+                'code' => 'first_lesson',
+                'description' => 'Compléter votre première leçon',
+                'icon' => 'rocket',
+                'type' => 'lesson',
+                'criteria' => json_encode(['lessons_completed' => 1]),
+                'points_reward' => 10,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Étudiant Régulier',
+                'code' => 'streak_7',
+                'description' => 'Étudier 7 jours consécutifs',
+                'icon' => 'fire',
+                'type' => 'streak',
+                'criteria' => json_encode(['streak_days' => 7]),
+                'points_reward' => 50,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Maître du Chapitre',
+                'code' => 'chapter_complete',
+                'description' => 'Compléter un chapitre entier avec succès',
+                'icon' => 'trophy',
+                'type' => 'chapter',
+                'criteria' => json_encode(['chapter_completed' => true, 'min_score' => 70]),
+                'points_reward' => 100,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Score Parfait',
+                'code' => 'perfect_score',
+                'description' => 'Obtenir 100% à une évaluation',
+                'icon' => 'star',
+                'type' => 'score',
+                'criteria' => json_encode(['assessment_score' => 100]),
+                'points_reward' => 75,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Curieux',
+                'code' => 'questions_10',
+                'description' => 'Poser 10 questions à l\'IA',
+                'icon' => 'lightbulb',
+                'type' => 'special',
+                'criteria' => json_encode(['ai_questions' => 10]),
+                'points_reward' => 25,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ];
+
+        DB::table('achievements')->insert($achievements);
+    }
+}
+```
+
+---
+
+## Résumé des Tables
+
+| Groupe | Tables | Description |
+|--------|--------|-------------|
+| **Utilisateurs** | users, user_profiles, user_preferences | Gestion des comptes et préférences |
+| **Contenu** | levels, chapters, lessons | Structure du programme de chimie |
+| **Évaluations** | assessments, questions, initial_assessment_questions | Tests et questions |
+| **Progression** | user_lesson_progress, user_assessment_results, user_question_answers, user_initial_assessments | Suivi de l'apprentissage |
+| **IA** | ai_conversations | Historique des interactions avec l'IA |
+| **Gamification** | achievements, user_achievements | Récompenses et motivation |
+| **Système** | notifications, study_sessions | Notifications et analytics |
+
+---
+
+J'ai egalement pensé aux controlleur, Routes, et Seeders :
+
+# ALCHIFUNDA - Controllers, Routes, et Seeders
+
+---
+
+## 1. Structure des Controllers
+
+### Controllers Principaux
+
+```
+app/Http/Controllers/
+├── Auth/
+│   ├── LoginController.php
+│   ├── RegisterController.php
+│   ├── ForgotPasswordController.php
+│   └── ResetPasswordController.php
+├── Dashboard/
+│   └── DashboardController.php
+├── Assessment/
+│   ├── InitialAssessmentController.php
+│   ├── AssessmentController.php
+│   └── QuestionController.php
+├── Learning/
+│   ├── LevelController.php
+│   ├── ChapterController.php
+│   └── LessonController.php
+├── Progress/
+│   ├── ProgressController.php
+│   └── AchievementController.php
+├── AI/
+│   └── AIConversationController.php
+├── Profile/
+│   ├── ProfileController.php
+│   └── PreferenceController.php
+├── Notification/
+│   └── NotificationController.php
+└── Admin/
+    ├── AdminDashboardController.php
+    ├── AdminLevelController.php
+    ├── AdminChapterController.php
+    ├── AdminLessonController.php
+    ├── AdminAssessmentController.php
+    ├── AdminQuestionController.php
+    ├── AdminUserController.php
+    └── AdminAchievementController.php
+```
+
+---
+
+## 2. Définition des Controllers
+
+### AuthControllers
+
+```php
+<?php
+// app/Http/Controllers/Auth/RegisterController.php
+
+namespace App\Http\Controllers\Auth;
+
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Models\UserProfile;
+use App\Models\UserPreference;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
+
+class RegisterController extends Controller
+{
+    public function showRegistrationForm()
+    {
+        return view('auth.register');
+    }
+
+    public function register(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'initial_assessment_completed' => false,
+        ]);
+
+        // Créer le profil vide
+        UserProfile::create(['user_id' => $user->id]);
+        
+        // Créer les préférences par défaut
+        UserPreference::create(['user_id' => $user->id]);
+
+        Auth::login($user);
+
+        return redirect()->route('initial-assessment.start');
+    }
+}
+```
+
+```php
+<?php
+// app/Http/Controllers/Auth/LoginController.php
+
+namespace App\Http\Controllers\Auth;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class LoginController extends Controller
+{
+    public function showLoginForm()
+    {
+        return view('auth.login');
+    }
+
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            $request->session()->regenerate();
+            
+            $user = Auth::user();
+            $user->update(['last_login_at' => now()]);
+
+            if (!$user->initial_assessment_completed) {
+                return redirect()->route('initial-assessment.start');
+            }
+
+            return redirect()->intended(route('dashboard'));
+        }
+
+        return back()->withErrors([
+            'email' => 'Les identifiants fournis ne correspondent pas.',
+        ])->onlyInput('email');
+    }
+
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('home');
+    }
+}
+```
+
+### DashboardController
+
+```php
+<?php
+// app/Http/Controllers/Dashboard/DashboardController.php
+
+namespace App\Http\Controllers\Dashboard;
+
+use App\Http\Controllers\Controller;
+use App\Models\Chapter;
+use App\Models\Lesson;
+use App\Models\UserLessonProgress;
+use App\Models\UserAssessmentResult;
+use App\Models\Achievement;
+use App\Models\UserAchievement;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class DashboardController extends Controller
+{
+    public function index()
+    {
+        $user = Auth::user();
+        $profile = $user->profile;
+        $preferences = $user->preferences;
+
+        // Récupérer le niveau actuel
+        $currentLevel = $profile->assessedLevel ?? $profile->declaredLevel;
+
+        // Leçons recommandées
+        $recommendedLessons = $this->getRecommendedLessons($user, $currentLevel);
+
+        // Progression globale
+        $progressStats = $this->getProgressStats($user);
+
+        // Dernières activités
+        $recentActivity = UserLessonProgress::where('user_id', $user->id)
+            ->with('lesson.chapter')
+            ->orderBy('last_accessed_at', 'desc')
+            ->take(5)
+            ->get();
+
+        // Récompenses récentes
+        $recentAchievements = UserAchievement::where('user_id', $user->id)
+            ->with('achievement')
+            ->orderBy('earned_at', 'desc')
+            ->take(3)
+            ->get();
+
+        // Objectifs de la semaine
+        $weeklyGoals = $this->getWeeklyGoals($user);
+
+        return view('dashboard.index', compact(
+            'user',
+            'profile',
+            'preferences',
+            'currentLevel',
+            'recommendedLessons',
+            'progressStats',
+            'recentActivity',
+            'recentAchievements',
+            'weeklyGoals'
+        ));
+    }
+
+    private function getRecommendedLessons($user, $level)
+    {
+        if (!$level) {
+            return collect();
+        }
+
+        $completedLessonIds = UserLessonProgress::where('user_id', $user->id)
+            ->where('status', 'completed')
+            ->pluck('lesson_id');
+
+        return Lesson::whereHas('chapter', function ($query) use ($level) {
+                $query->where('level_id', $level->id);
+            })
+            ->whereNotIn('id', $completedLessonIds)
+            ->orderBy('chapter_id')
+            ->orderBy('order')
+            ->take(5)
+            ->with('chapter')
+            ->get();
+    }
+
+    private function getProgressStats($user)
+    {
+        $totalLessons = Lesson::where('is_active', true)->count();
+        $completedLessons = UserLessonProgress::where('user_id', $user->id)
+            ->where('status', 'completed')
+            ->count();
+
+        $totalAssessments = UserAssessmentResult::where('user_id', $user->id)->count();
+        $passedAssessments = UserAssessmentResult::where('user_id', $user->id)
+            ->where('passed', true)
+            ->count();
+
+        return [
+            'total_lessons' => $totalLessons,
+            'completed_lessons' => $completedLessons,
+            'completion_percentage' => $totalLessons > 0 ? round(($completedLessons / $totalLessons) * 100) : 0,
+            'total_assessments' => $totalAssessments,
+            'passed_assessments' => $passedAssessments,
+            'average_score' => UserAssessmentResult::where('user_id', $user->id)->avg('percentage') ?? 0,
+            'current_streak' => $user->profile->current_streak_days ?? 0,
+        ];
+    }
+
+    private function getWeeklyGoals($user)
+    {
+        $profile = $user->profile;
+        $targetLessonsPerWeek = ceil(($profile->study_time_per_day ?? 30) * ($profile->study_days_per_week ?? 5) / 30);
+
+        $lessonsThisWeek = UserLessonProgress::where('user_id', $user->id)
+            ->where('status', 'completed')
+            ->where('completed_at', '>=', now()->startOfWeek())
+            ->count();
+
+        return [
+            'target_lessons' => $targetLessonsPerWeek,
+            'completed_lessons' => $lessonsThisWeek,
+            'progress_percentage' => $targetLessonsPerWeek > 0 ? min(100, round(($lessonsThisWeek / $targetLessonsPerWeek) * 100)) : 0,
+        ];
+    }
+}
+```
+
+### InitialAssessmentController
+
+```php
+<?php
+// app/Http/Controllers/Assessment/InitialAssessmentController.php
+
+namespace App\Http\Controllers\Assessment;
+
+use App\Http\Controllers\Controller;
+use App\Models\Level;
+use App\Models\InitialAssessmentQuestion;
+use App\Models\UserInitialAssessment;
+use App\Models\UserProfile;
+use App\Services\AIService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class InitialAssessmentController extends Controller
+{
+    protected $aiService;
+
+    public function __construct(AIService $aiService)
+    {
+        $this->aiService = $aiService;
+    }
+
+    public function start()
+    {
+        $user = Auth::user();
+        
+        if ($user->initial_assessment_completed) {
+            return redirect()->route('dashboard');
+        }
+
+        return view('assessment.initial.start');
+    }
+
+    public function profileStep()
+    {
+        $levels = Level::where('is_active', true)->orderBy('order')->get();
+        
+        return view('assessment.initial.profile', compact('levels'));
+    }
+
+    public function saveProfile(Request $request)
+    {
+        $validated = $request->validate([
+            'age' => 'required|integer|min:10|max:100',
+            'declared_level_id' => 'required|exists:levels,id',
+            'school_option' => 'required|string',
+            'study_time_per_day' => 'required|integer|min:10|max:480',
+            'study_days_per_week' => 'required|integer|min:1|max:7',
+            'school_name' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:255',
+            'province' => 'nullable|string|max:255',
+        ]);
+
+        $user = Auth::user();
+        $user->profile->update($validated);
+
+        return redirect()->route('initial-assessment.knowledge');
+    }
+
+    public function knowledgeStep()
+    {
+        $user = Auth::user();
+        $declaredLevel = $user->profile->declaredLevel;
+
+        // Récupérer les questions adaptées au niveau déclaré et en dessous
+        $questions = InitialAssessmentQuestion::where('is_active', true)
+            ->where(function ($query) use ($declaredLevel) {
+                $query->whereNull('level_id')
+                    ->orWhereHas('level', function ($q) use ($declaredLevel) {
+                        $q->where('order', '<=', $declaredLevel->order);
+                    });
+            })
+            ->orderBy('difficulty_score')
+            ->orderBy('order')
+            ->take(10)
+            ->get();
+
+        return view('assessment.initial.knowledge', compact('questions'));
+    }
+
+    public function saveKnowledge(Request $request)
+    {
+        $user = Auth::user();
+        $answers = $request->input('answers', []);
+        
+        $questions = InitialAssessmentQuestion::whereIn('id', array_keys($answers))->get();
+        
+        $totalScore = 0;
+        $topicScores = [];
+        $responses = [];
+
+        foreach ($questions as $question) {
+            $userAnswer = $answers[$question->id] ?? null;
+            $isCorrect = $this->checkAnswer($question, $userAnswer);
+            
+            $responses[$question->id] = [
+                'answer' => $userAnswer,
+                'correct' => $isCorrect,
+                'topic' => $question->topic,
+            ];
+
+            if ($isCorrect) {
+                $totalScore += $question->difficulty_score;
+            }
+
+            // Calculer les scores par sujet
+            if ($question->topic) {
+                if (!isset($topicScores[$question->topic])) {
+                    $topicScores[$question->topic] = ['correct' => 0, 'total' => 0];
+                }
+                $topicScores[$question->topic]['total']++;
+                if ($isCorrect) {
+                    $topicScores[$question->topic]['correct']++;
+                }
+            }
+        }
+
+        // Déterminer le niveau recommandé
+        $recommendedLevel = $this->determineLevel($totalScore, $questions->count());
+
+        // Analyse par l'IA
+        $aiAnalysis = $this->aiService->analyzeInitialAssessment($responses, $topicScores, $user->profile);
+
+        // Sauvegarder le résultat
+        UserInitialAssessment::create([
+            'user_id' => $user->id,
+            'responses' => $responses,
+            'total_score' => $totalScore,
+            'recommended_level_id' => $recommendedLevel->id,
+            'topic_scores' => $topicScores,
+            'ai_analysis' => $aiAnalysis,
+            'completed_at' => now(),
+        ]);
+
+        // Mettre à jour le profil
+        $user->profile->update(['assessed_level_id' => $recommendedLevel->id]);
+
+        return redirect()->route('initial-assessment.preferences');
+    }
+
+    public function preferencesStep()
+    {
+        return view('assessment.initial.preferences');
+    }
+
+    public function savePreferences(Request $request)
+    {
+        $validated = $request->validate([
+            'tone' => 'required|in:formal,casual,friendly',
+            'detail_level' => 'required|in:concise,moderate,detailed',
+            'example_style' => 'required|in:everyday,scientific,mixed',
+            'show_math_steps' => 'boolean',
+            'preferred_study_time' => 'nullable|date_format:H:i',
+        ]);
+
+        $user = Auth::user();
+        $user->preferences->update($validated);
+        $user->update(['initial_assessment_completed' => true]);
+
+        return redirect()->route('initial-assessment.complete');
+    }
+
+    public function complete()
+    {
+        $user = Auth::user();
+        $assessment = UserInitialAssessment::where('user_id', $user->id)
+            ->latest()
+            ->first();
+
+        $recommendedLevel = $assessment->recommendedLevel;
+
+        return view('assessment.initial.complete', compact('assessment', 'recommendedLevel'));
+    }
+
+    private function checkAnswer($question, $userAnswer)
+    {
+        if ($userAnswer === null) {
+            return false;
+        }
+
+        $correctAnswer = strtolower(trim($question->correct_answer));
+        $userAnswer = strtolower(trim($userAnswer));
+
+        return $correctAnswer === $userAnswer;
+    }
+
+    private function determineLevel($score, $totalQuestions)
+    {
+        $percentage = ($score / ($totalQuestions * 5)) * 100; // Assuming max difficulty_score is 5
+
+        if ($percentage >= 80) {
+            return Level::where('code', '6HUM')->first();
+        } elseif ($percentage >= 60) {
+            return Level::where('code', '5HUM')->first();
+        } elseif ($percentage >= 40) {
+            return Level::where('code', '4SEC')->first();
+        } else {
+            return Level::where('code', '3SEC')->first();
+        }
+    }
+}
+```
+
+### LessonController
+
+```php
+<?php
+// app/Http/Controllers/Learning/LessonController.php
+
+namespace App\Http\Controllers\Learning;
+
+use App\Http\Controllers\Controller;
+use App\Models\Lesson;
+use App\Models\Assessment;
+use App\Models\UserLessonProgress;
+use App\Models\StudySession;
+use App\Services\AIService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class LessonController extends Controller
+{
+    protected $aiService;
+
+    public function __construct(AIService $aiService)
+    {
+        $this->aiService = $aiService;
+    }
+
+    public function show($chapterSlug, $lessonSlug)
+    {
+        $lesson = Lesson::where('slug', $lessonSlug)
+            ->whereHas('chapter', function ($query) use ($chapterSlug) {
+                $query->where('slug', $chapterSlug);
+            })
+            ->with(['chapter.level', 'assessments'])
+            ->firstOrFail();
+
+        $user = Auth::user();
+
+        // Vérifier/créer la progression
+        $progress = UserLessonProgress::firstOrCreate(
+            ['user_id' => $user->id, 'lesson_id' => $lesson->id],
+            [
+                'status' => 'in_progress',
+                'started_at' => now(),
+                'last_accessed_at' => now(),
+            ]
+        );
+
+        // Mettre à jour l'accès
+        $progress->update([
+            'last_accessed_at' => now(),
+            'access_count' => $progress->access_count + 1,
+        ]);
+
+        // Adapter le contenu selon les préférences
+        $preferences = $user->preferences;
+        $adaptedContent = $this->aiService->adaptContent($lesson, $preferences);
+
+        // Mini-quiz intégrés
+        $miniQuiz = Assessment::where('lesson_id', $lesson->id)
+            ->where('type', 'mini_quiz')
+            ->with('questions')
+            ->first();
+
+        // Leçons adjacentes
+        $previousLesson = Lesson::where('chapter_id', $lesson->chapter_id)
+            ->where('order', '<', $lesson->order)
+            ->orderBy('order', 'desc')
+            ->first();
+
+        $nextLesson = Lesson::where('chapter_id', $lesson->chapter_id)
+            ->where('order', '>', $lesson->order)
+            ->orderBy('order')
+            ->first();
+
+        return view('learning.lesson.show', compact(
+            'lesson',
+            'progress',
+            'adaptedContent',
+            'miniQuiz',
+            'previousLesson',
+            'nextLesson'
+        ));
+    }
+
+    public function complete(Request $request, $lessonId)
+    {
+        $user = Auth::user();
+        $lesson = Lesson::findOrFail($lessonId);
+
+        $progress = UserLessonProgress::where('user_id', $user->id)
+            ->where('lesson_id', $lesson->id)
+            ->first();
+
+        if ($progress) {
+            $progress->update([
+                'status' => 'completed',
+                'progress_percentage' => 100,
+                'completed_at' => now(),
+            ]);
+
+            // Mettre à jour les stats du profil
+            $user->profile->increment('total_lessons_completed');
+            
+            // Vérifier les achievements
+            $this->checkAchievements($user);
+        }
+
+        // Rediriger vers le contrôle de fin de leçon
+        $endControl = Assessment::where('lesson_id', $lesson->id)
+            ->where('type', 'end_lesson_control')
+            ->first();
+
+        if ($endControl) {
+            return redirect()->route('assessment.start', $endControl->id);
+        }
+
+        return redirect()->route('chapter.show', $lesson->chapter->slug)
+            ->with('success', 'Leçon terminée avec succès !');
+    }
+
+    public function askAI(Request $request, $lessonId)
+    {
+        $validated = $request->validate([
+            'question' => 'required|string|max:1000',
+        ]);
+
+        $user = Auth::user();
+        $lesson = Lesson::findOrFail($lessonId);
+
+        $response = $this->aiService->answerQuestion(
+            $validated['question'],
+            $lesson,
+            $user->preferences
+        );
+
+        // Sauvegarder la conversation
+        $user->aiConversations()->create([
+            'lesson_id' => $lesson->id,
+            'context' => 'lesson_help',
+            'user_message' => $validated['question'],
+            'ai_response' => $response,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'response' => $response,
+        ]);
+    }
+
+    private function checkAchievements($user)
+    {
+        // Logique de vérification des achievements
+        // (implémentation détaillée dans AchievementService)
+    }
+}
+```
+
+### AssessmentController
+
+```php
+<?php
+// app/Http/Controllers/Assessment/AssessmentController.php
+
+namespace App\Http\Controllers\Assessment;
+
+use App\Http\Controllers\Controller;
+use App\Models\Assessment;
+use App\Models\Question;
+use App\Models\UserAssessmentResult;
+use App\Models\UserQuestionAnswer;
+use App\Models\UserLessonProgress;
+use App\Services\AIService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+
+class AssessmentController extends Controller
+{
+    protected $aiService;
+
+    public function __construct(AIService $aiService)
+    {
+        $this->aiService = $aiService;
+    }
+
+    public function start($assessmentId)
+    {
+        $assessment = Assessment::with(['lesson.chapter', 'questions'])
+            ->findOrFail($assessmentId);
+
+        $user = Auth::user();
+
+        // Vérifier le nombre de tentatives
+        $attempts = UserAssessmentResult::where('user_id', $user->id)
+            ->where('assessment_id', $assessment->id)
+            ->count();
+
+        if ($attempts >= $assessment->max_attempts) {
+            return redirect()->back()
+                ->with('error', 'Vous avez atteint le nombre maximum de tentatives.');
+        }
+
+        // Préparer les questions (mélanger si nécessaire)
+        $questions = $assessment->questions;
+        if ($assessment->shuffle_questions) {
+            $questions = $questions->shuffle();
+        }
+
+        return view('assessment.start', compact('assessment', 'questions', 'attempts'));
+    }
+
+    public function submit(Request $request, $assessmentId)
+    {
+        $assessment = Assessment::with('questions')->findOrFail($assessmentId);
+        $user = Auth::user();
+        $answers = $request->input('answers', []);
+        $startedAt = $request->input('started_at');
+
+        $attemptNumber = UserAssessmentResult::where('user_id', $user->id)
+            ->where('assessment_id', $assessment->id)
+            ->count() + 1;
+
+        DB::beginTransaction();
+
+        try {
+            $totalPoints = 0;
+            $earnedPoints = 0;
+            $questionResults = [];
+            $weakPoints = [];
+            $strongPoints = [];
+
+            // Évaluer chaque question
+            foreach ($assessment->questions as $question) {
+                $userAnswer = $answers[$question->id] ?? null;
+                $isCorrect = $this->evaluateAnswer($question, $userAnswer);
+                
+                $pointsEarned = $isCorrect ? $question->points : 0;
+                $earnedPoints += $pointsEarned;
+                $totalPoints += $question->points;
+
+                $questionResults[$question->id] = [
+                    'answer' => $userAnswer,
+                    'correct' => $isCorrect,
+                    'points' => $pointsEarned,
+                ];
+
+                // Identifier forces et faiblesses
+                if ($isCorrect) {
+                    $strongPoints[] = $question->id;
+                } else {
+                    $weakPoints[] = $question->id;
+                }
+            }
+
+            $percentage = $totalPoints > 0 ? round(($earnedPoints / $totalPoints) * 100) : 0;
+            $passed = $percentage >= $assessment->passing_score;
+
+            // Générer le feedback IA
+            $aiFeedback = $this->aiService->generateAssessmentFeedback(
+                $assessment,
+                $questionResults,
+                $percentage,
+                $user->preferences
+            );
+
+            // Créer le résultat
+            $result = UserAssessmentResult::create([
+                'user_id' => $user->id,
+                'assessment_id' => $assessment->id,
+                'score' => $earnedPoints,
+                'percentage' => $percentage,
+                'passed' => $passed,
+                'attempt_number' => $attemptNumber,
+                'time_taken_minutes' => $startedAt ? now()->diffInMinutes($startedAt) : null,
+                'answers' => $questionResults,
+                'ai_feedback' => $aiFeedback,
+                'weak_points' => $weakPoints,
+                'strong_points' => $strongPoints,
+                'started_at' => $startedAt ?? now(),
+                'completed_at' => now(),
+            ]);
+
+            // Sauvegarder les réponses détaillées
+            foreach ($assessment->questions as $question) {
+                $questionResult = $questionResults[$question->id];
+                
+                UserQuestionAnswer::create([
+                    'user_id' => $user->id,
+                    'user_assessment_result_id' => $result->id,
+                    'question_id' => $question->id,
+                    'user_answer' => $questionResult['answer'],
+                    'is_correct' => $questionResult['correct'],
+                    'points_earned' => $questionResult['points'],
+                    'ai_explanation' => $this->aiService->explainAnswer($question, $questionResult['answer'], $user->preferences),
+                ]);
+            }
+
+            // Mettre à jour la progression de la leçon si réussi
+            if ($passed) {
+                $user->profile->increment('total_assessments_passed');
+                
+                if ($assessment->lesson) {
+                    UserLessonProgress::where('user_id', $user->id)
+                        ->where('lesson_id', $assessment->lesson_id)
+                        ->update(['status' => 'completed']);
+                }
+            } else {
+                // Marquer pour révision
+                if ($assessment->lesson) {
+                    UserLessonProgress::where('user_id', $user->id)
+                        ->where('lesson_id', $assessment->lesson_id)
+                        ->update(['status' => 'revision_needed']);
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->route('assessment.result', $result->id);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    public function result($resultId)
+    {
+        $result = UserAssessmentResult::with([
+            'assessment.lesson.chapter',
+            'assessment.questions',
+            'questionAnswers.question'
+        ])->findOrFail($resultId);
+
+        $this->authorize('view', $result);
+
+        return view('assessment.result', compact('result'));
+    }
+
+    public function retry($assessmentId)
+    {
+        return redirect()->route('assessment.start', $assessmentId);
+    }
+
+    private function evaluateAnswer(Question $question, $userAnswer)
+    {
+        if ($userAnswer === null) {
+            return false;
+        }
+
+        $correctAnswer = strtolower(trim($question->correct_answer));
+        $userAnswer = strtolower(trim($userAnswer));
+
+        switch ($question->question_type) {
+            case 'mcq':
+            case 'true_false':
+                return $correctAnswer === $userAnswer;
+            
+            case 'short_answer':
+                // Comparaison plus flexible pour les réponses courtes
+                return similar_text($correctAnswer, $userAnswer) / max(strlen($correctAnswer), strlen($userAnswer)) > 0.8;
+            
+            case 'calculation':
+                // Pour les calculs, comparer les valeurs numériques
+                return abs(floatval($correctAnswer) - floatval($userAnswer)) < 0.01;
+            
+            case 'fill_blank':
+                return $correctAnswer === $userAnswer;
+            
+            default:
+                return $correctAnswer === $userAnswer;
+        }
+    }
+}
+```
+
+### ChapterController
+
+```php
+<?php
+// app/Http/Controllers/Learning/ChapterController.php
+
+namespace App\Http\Controllers\Learning;
+
+use App\Http\Controllers\Controller;
+use App\Models\Chapter;
+use App\Models\UserLessonProgress;
+use Illuminate\Support\Facades\Auth;
+
+class ChapterController extends Controller
+{
+    public function index($levelCode = null)
+    {
+        $user = Auth::user();
+        $currentLevel = $user->profile->assessedLevel ?? $user->profile->declaredLevel;
+
+        $query = Chapter::with(['level', 'lessons'])
+            ->where('is_active', true);
+
+        if ($levelCode) {
+            $query->whereHas('level', function ($q) use ($levelCode) {
+                $q->where('code', $levelCode);
+            });
+        } elseif ($currentLevel) {
+            $query->where('level_id', $currentLevel->id);
+        }
+
+        $chapters = $query->orderBy('order')->get();
+
+        // Ajouter les infos de progression pour chaque chapitre
+        $chapters->each(function ($chapter) use ($user) {
+            $totalLessons = $chapter->lessons->count();
+            $completedLessons = UserLessonProgress::where('user_id', $user->id)
+                ->whereIn('lesson_id', $chapter->lessons->pluck('id'))
+                ->where('status', 'completed')
+                ->count();
+
+            $chapter->progress_percentage = $totalLessons > 0 
+                ? round(($completedLessons / $totalLessons) * 100) 
+                : 0;
+            $chapter->completed_lessons = $completedLessons;
+            $chapter->total_lessons = $totalLessons;
+        });
+
+        return view('learning.chapter.index', compact('chapters', 'currentLevel'));
+    }
+
+    public function show($slug)
+    {
+        $chapter = Chapter::where('slug', $slug)
+            ->with(['level', 'lessons' => function ($query) {
+                $query->where('is_active', true)->orderBy('order');
+            }])
+            ->firstOrFail();
+
+        $user = Auth::user();
+
+        // Ajouter les infos de progression pour chaque leçon
+        $chapter->lessons->each(function ($lesson) use ($user) {
+            $progress = UserLessonProgress::where('user_id', $user->id)
+                ->where('lesson_id', $lesson->id)
+                ->first();
+
+            $lesson->user_status = $progress->status ?? 'not_started';
+            $lesson->user_progress = $progress->progress_percentage ?? 0;
+        });
+
+        // Chapitres adjacents
+        $previousChapter = Chapter::where('level_id', $chapter->level_id)
+            ->where('order', '<', $chapter->order)
+            ->orderBy('order', 'desc')
+            ->first();
+
+        $nextChapter = Chapter::where('level_id', $chapter->level_id)
+            ->where('order', '>', $chapter->order)
+            ->orderBy('order')
+            ->first();
+
+        return view('learning.chapter.show', compact('chapter', 'previousChapter', 'nextChapter'));
+    }
+}
+```
+
+### LevelController
+
+```php
+<?php
+// app/Http/Controllers/Learning/LevelController.php
+
+namespace App\Http\Controllers\Learning;
+
+use App\Http\Controllers\Controller;
+use App\Models\Level;
+use App\Models\Chapter;
+use App\Models\UserLessonProgress;
+use Illuminate\Support\Facades\Auth;
+
+class LevelController extends Controller
+{
+    public function index()
+    {
+        $levels = Level::where('is_active', true)
+            ->withCount('chapters')
+            ->orderBy('order')
+            ->get();
+
+        $user = Auth::user();
+        $currentLevel = $user->profile->assessedLevel ?? $user->profile->declaredLevel;
+
+        return view('learning.level.index', compact('levels', 'currentLevel'));
+    }
+
+    public function show($code)
+    {
+        $level = Level::where('code', $code)
+            ->with(['chapters' => function ($query) {
+                $query->where('is_active', true)
+                    ->withCount('lessons')
+                    ->orderBy('order');
+            }])
+            ->firstOrFail();
+
+        $user = Auth::user();
+
+        // Calculer la progression pour chaque chapitre
+        $level->chapters->each(function ($chapter) use ($user) {
+            $lessonIds = $chapter->lessons->pluck('id');
+            $completedCount = UserLessonProgress::where('user_id', $user->id)
+                ->whereIn('lesson_id', $lessonIds)
+                ->where('status', 'completed')
+                ->count();
+
+            $chapter->progress_percentage = $chapter->lessons_count > 0
+                ? round(($completedCount / $chapter->lessons_count) * 100)
+                : 0;
+        });
+
+        return view('learning.level.show', compact('level'));
+    }
+}
+```
+
+### ProfileController
+
+```php
+<?php
+// app/Http/Controllers/Profile/ProfileController.php
+
+namespace App\Http\Controllers\Profile;
+
+use App\Http\Controllers\Controller;
+use App\Models\Level;
+use App\Models\UserAssessmentResult;
+use App\Models\UserLessonProgress;
+use App\Models\UserAchievement;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+
+class ProfileController extends Controller
+{
+    public function show()
+    {
+        $user = Auth::user();
+        $profile = $user->profile;
+        $preferences = $user->preferences;
+
+        // Statistiques détaillées
+        $stats = [
+            'total_lessons' => UserLessonProgress::where('user_id', $user->id)->count(),
+            'completed_lessons' => UserLessonProgress::where('user_id', $user->id)
+                ->where('status', 'completed')->count(),
+            'total_assessments' => UserAssessmentResult::where('user_id', $user->id)->count(),
+            'passed_assessments' => UserAssessmentResult::where('user_id', $user->id)
+                ->where('passed', true)->count(),
+            'average_score' => round(UserAssessmentResult::where('user_id', $user->id)
+                ->avg('percentage') ?? 0),
+            'total_time_minutes' => UserLessonProgress::where('user_id', $user->id)
+                ->sum('time_spent_minutes'),
+            'achievements_count' => UserAchievement::where('user_id', $user->id)->count(),
+        ];
+
+        // Évolution des scores (derniers 10 assessments)
+        $scoreHistory = UserAssessmentResult::where('user_id', $user->id)
+            ->orderBy('completed_at', 'desc')
+            ->take(10)
+            ->get(['percentage', 'completed_at'])
+            ->reverse();
+
+        return view('profile.show', compact('user', 'profile', 'preferences', 'stats', 'scoreHistory'));
+    }
+
+    public function edit()
+    {
+        $user = Auth::user();
+        $profile = $user->profile;
+        $levels = Level::where('is_active', true)->orderBy('order')->get();
+
+        return view('profile.edit', compact('user', 'profile', 'levels'));
+    }
+
+    public function update(Request $request)
+    {
+        $user = Auth::user();
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'age' => 'nullable|integer|min:10|max:100',
+            'school_option' => 'nullable|string|max:255',
+            'school_name' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:255',
+            'province' => 'nullable|string|max:255',
+            'study_time_per_day' => 'nullable|integer|min:10|max:480',
+            'study_days_per_week' => 'nullable|integer|min:1|max:7',
+        ]);
+
+        $user->update([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+        ]);
+
+        $user->profile->update([
+            'age' => $validated['age'],
+            'school_option' => $validated['school_option'],
+            'school_name' => $validated['school_name'],
+            'city' => $validated['city'],
+            'province' => $validated['province'],
+            'study_time_per_day' => $validated['study_time_per_day'],
+            'study_days_per_week' => $validated['study_days_per_week'],
+        ]);
+
+        return redirect()->route('profile.show')
+            ->with('success', 'Profil mis à jour avec succès.');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $validated = $request->validate([
+            'current_password' => 'required',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = Auth::user();
+
+        if (!Hash::check($validated['current_password'], $user->password)) {
+            return back()->withErrors(['current_password' => 'Le mot de passe actuel est incorrect.']);
+        }
+
+        $user->update([
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        return back()->with('success', 'Mot de passe mis à jour avec succès.');
+    }
+}
+```
+
+### PreferenceController
+
+```php
+<?php
+// app/Http/Controllers/Profile/PreferenceController.php
+
+namespace App\Http\Controllers\Profile;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class PreferenceController extends Controller
+{
+    public function edit()
+    {
+        $preferences = Auth::user()->preferences;
+        return view('profile.preferences', compact('preferences'));
+    }
+
+    public function update(Request $request)
+    {
+        $validated = $request->validate([
+            'tone' => 'required|in:formal,casual,friendly',
+            'detail_level' => 'required|in:concise,moderate,detailed',
+            'example_style' => 'required|in:everyday,scientific,mixed',
+            'show_math_steps' => 'boolean',
+            'enable_notifications' => 'boolean',
+            'enable_reminders' => 'boolean',
+            'preferred_study_time' => 'nullable|date_format:H:i',
+        ]);
+
+        Auth::user()->preferences->update($validated);
+
+        return back()->with('success', 'Préférences mises à jour avec succès.');
+    }
+}
+```
+
+### ProgressController
+
+```php
+<?php
+// app/Http/Controllers/Progress/ProgressController.php
+
+namespace App\Http\Controllers\Progress;
+
+use App\Http\Controllers\Controller;
+use App\Models\Level;
+use App\Models\Chapter;
+use App\Models\UserLessonProgress;
+use App\Models\UserAssessmentResult;
+use App\Models\StudySession;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
+
+class ProgressController extends Controller
+{
+    public function index()
+    {
+        $user = Auth::user();
+
+        // Progression par niveau
+        $levels = Level::where('is_active', true)
+            ->with('chapters.lessons')
+            ->orderBy('order')
+            ->get();
+
+        $levelProgress = $levels->map(function ($level) use ($user) {
+            $lessonIds = $level->chapters->flatMap->lessons->pluck('id');
+            $totalLessons = $lessonIds->count();
+            $completedLessons = UserLessonProgress::where('user_id', $user->id)
+                ->whereIn('lesson_id', $lessonIds)
+                ->where('status', 'completed')
+                ->count();
+
+            return [
+                'level' => $level,
+                'total' => $totalLessons,
+                'completed' => $completedLessons,
+                'percentage' => $totalLessons > 0 ? round(($completedLessons / $totalLessons) * 100) : 0,
+            ];
+        });
+
+        // Historique des scores
+        $scoreHistory = UserAssessmentResult::where('user_id', $user->id)
+            ->orderBy('completed_at', 'desc')
+            ->take(20)
+            ->with('assessment.lesson')
+            ->get();
+
+        // Activité par jour (7 derniers jours)
+        $weeklyActivity = $this->getWeeklyActivity($user);
+
+        // Temps d'étude total
+        $totalStudyTime = StudySession::where('user_id', $user->id)
+            ->sum('duration_minutes');
+
+        return view('progress.index', compact(
+            'levelProgress',
+            'scoreHistory',
+            'weeklyActivity',
+            'totalStudyTime'
+        ));
+    }
+
+    public function history()
+    {
+        $user = Auth::user();
+
+        $lessonHistory = UserLessonProgress::where('user_id', $user->id)
+            ->with('lesson.chapter.level')
+            ->orderBy('last_accessed_at', 'desc')
+            ->paginate(20);
+
+        return view('progress.history', compact('lessonHistory'));
+    }
+
+    public function assessments()
+    {
+        $user = Auth::user();
+
+        $assessmentHistory = UserAssessmentResult::where('user_id', $user->id)
+            ->with('assessment.lesson.chapter')
+            ->orderBy('completed_at', 'desc')
+            ->paginate(20);
+
+        return view('progress.assessments', compact('assessmentHistory'));
+    }
+
+    private function getWeeklyActivity($user)
+    {
+        $activity = [];
+        
+        for ($i = 6; $i >= 0; $i--) {
+            $date = Carbon::now()->subDays($i)->toDateString();
+            
+            $lessonsCompleted = UserLessonProgress::where('user_id', $user->id)
+                ->whereDate('completed_at', $date)
+                ->count();
+
+            $assessmentsTaken = UserAssessmentResult::where('user_id', $user->id)
+                ->whereDate('completed_at', $date)
+                ->count();
+
+            $activity[] = [
+                'date' => $date,
+                'day' => Carbon::parse($date)->locale('fr')->isoFormat('ddd'),
+                'lessons' => $lessonsCompleted,
+                'assessments' => $assessmentsTaken,
+            ];
+        }
+
+        return $activity;
+    }
+}
+```
+
+### AchievementController
+
+```php
+<?php
+// app/Http/Controllers/Progress/AchievementController.php
+
+namespace App\Http\Controllers\Progress;
+
+use App\Http\Controllers\Controller;
+use App\Models\Achievement;
+use App\Models\UserAchievement;
+use Illuminate\Support\Facades\Auth;
+
+class AchievementController extends Controller
+{
+    public function index()
+    {
+        $user = Auth::user();
+
+        $earnedAchievementIds = UserAchievement::where('user_id', $user->id)
+            ->pluck('achievement_id');
+
+        $earnedAchievements = Achievement::whereIn('id', $earnedAchievementIds)
+            ->where('is_active', true)
+            ->get()
+            ->map(function ($achievement) use ($user) {
+                $userAchievement = UserAchievement::where('user_id', $user->id)
+                    ->where('achievement_id', $achievement->id)
+                    ->first();
+                $achievement->earned_at = $userAchievement->earned_at;
+                return $achievement;
+            });
+
+        $lockedAchievements = Achievement::whereNotIn('id', $earnedAchievementIds)
+            ->where('is_active', true)
+            ->get();
+
+        $totalPoints = $earnedAchievements->sum('points_reward');
+
+        return view('progress.achievements', compact(
+            'earnedAchievements',
+            'lockedAchievements',
+            'totalPoints'
+        ));
+    }
+}
+```
+
+### AIConversationController
+
+```php
+<?php
+// app/Http/Controllers/AI/AIConversationController.php
+
+namespace App\Http\Controllers\AI;
+
+use App\Http\Controllers\Controller;
+use App\Models\AIConversation;
+use App\Models\Lesson;
+use App\Services\AIService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class AIConversationController extends Controller
+{
+    protected $aiService;
+
+    public function __construct(AIService $aiService)
+    {
+        $this->aiService = $aiService;
+    }
+
+    public function ask(Request $request)
+    {
+        $validated = $request->validate([
+            'message' => 'required|string|max:2000',
+            'lesson_id' => 'nullable|exists:lessons,id',
+            'context' => 'required|in:lesson_help,general_question,feedback',
+        ]);
+
+        $user = Auth::user();
+        $lesson = $validated['lesson_id'] ? Lesson::find($validated['lesson_id']) : null;
+
+        // Générer la réponse IA
+        $response = $this->aiService->generateResponse(
+            $validated['message'],
+            $validated['context'],
+            $lesson,
+            $user->preferences,
+            $this->getRecentConversations($user, $lesson)
+        );
+
+        // Sauvegarder la conversation
+        $conversation = AIConversation::create([
+            'user_id' => $user->id,
+            'lesson_id' => $lesson?->id,
+            'context' => $validated['context'],
+            'user_message' => $validated['message'],
+            'ai_response' => $response,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'response' => $response,
+            'conversation_id' => $conversation->id,
+        ]);
+    }
+
+    public function history(Request $request)
+    {
+        $user = Auth::user();
+
+        $query = AIConversation::where('user_id', $user->id)
+            ->with('lesson');
+
+        if ($request->has('lesson_id')) {
+            $query->where('lesson_id', $request->lesson_id);
+        }
+
+        if ($request->has('context')) {
+            $query->where('context', $request->context);
+        }
+
+        $conversations = $query->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        return view('ai.history', compact('conversations'));
+    }
+
+    private function getRecentConversations($user, $lesson = null)
+    {
+        $query = AIConversation::where('user_id', $user->id);
+
+        if ($lesson) {
+            $query->where('lesson_id', $lesson->id);
+        }
+
+        return $query->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+    }
+}
+```
+
+### NotificationController
+
+```php
+<?php
+// app/Http/Controllers/Notification/NotificationController.php
+
+namespace App\Http\Controllers\Notification;
+
+use App\Http\Controllers\Controller;
+use App\Models\Notification;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class NotificationController extends Controller
+{
+    public function index()
+    {
+        $notifications = Notification::where('user_id', Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        return view('notifications.index', compact('notifications'));
+    }
+
+    public function markAsRead($id)
+    {
+        $notification = Notification::where('user_id', Auth::id())
+            ->findOrFail($id);
+
+        $notification->update([
+            'is_read' => true,
+            'read_at' => now(),
+        ]);
+
+        return back();
+    }
+
+    public function markAllAsRead()
+    {
+        Notification::where('user_id', Auth::id())
+            ->where('is_read', false)
+            ->update([
+                'is_read' => true,
+                'read_at' => now(),
+            ]);
+
+        return back()->with('success', 'Toutes les notifications ont été marquées comme lues.');
+    }
+
+    public function destroy($id)
+    {
+        $notification = Notification::where('user_id', Auth::id())
+            ->findOrFail($id);
+
+        $notification->delete();
+
+        return back()->with('success', 'Notification supprimée.');
+    }
+
+    public function getUnreadCount()
+    {
+        $count = Notification::where('user_id', Auth::id())
+            ->where('is_read', false)
+            ->count();
+
+        return response()->json(['count' => $count]);
+    }
+}
+```
+
+---
+
+## 3. Routes
+
+```php
+<?php
+// routes/web.php
+
+use Illuminate\Support\Facades\Route;
+
+// Controllers Auth
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
+
+// Controllers principaux
+use App\Http\Controllers\Dashboard\DashboardController;
+use App\Http\Controllers\Assessment\InitialAssessmentController;
+use App\Http\Controllers\Assessment\AssessmentController;
+use App\Http\Controllers\Learning\LevelController;
+use App\Http\Controllers\Learning\ChapterController;
+use App\Http\Controllers\Learning\LessonController;
+use App\Http\Controllers\Progress\ProgressController;
+use App\Http\Controllers\Progress\AchievementController;
+use App\Http\Controllers\Profile\ProfileController;
+use App\Http\Controllers\Profile\PreferenceController;
+use App\Http\Controllers\AI\AIConversationController;
+use App\Http\Controllers\Notification\NotificationController;
+
+/*
+|--------------------------------------------------------------------------
+| Routes Publiques
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/', function () {
+    return view('welcome');
+})->name('home');
+
+/*
+|--------------------------------------------------------------------------
+| Routes d'Authentification
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('guest')->group(function () {
+    // Inscription
+    Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+    Route::post('/register', [RegisterController::class, 'register']);
+
+    // Connexion
+    Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [LoginController::class, 'login']);
+
+    // Mot de passe oublié
+    Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+    Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+    Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+    Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
+});
+
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
+
+/*
+|--------------------------------------------------------------------------
+| Routes Protégées (Authentification requise)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('auth')->group(function () {
+
+    /*
+    |--------------------------------------------------------------------------
+    | Évaluation Initiale
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('initial-assessment')->name('initial-assessment.')->group(function () {
+        Route::get('/', [InitialAssessmentController::class, 'start'])->name('start');
+        Route::get('/profile', [InitialAssessmentController::class, 'profileStep'])->name('profile');
+        Route::post('/profile', [InitialAssessmentController::class, 'saveProfile'])->name('profile.save');
+        Route::get('/knowledge', [InitialAssessmentController::class, 'knowledgeStep'])->name('knowledge');
+        Route::post('/knowledge', [InitialAssessmentController::class, 'saveKnowledge'])->name('knowledge.save');
+        Route::get('/preferences', [InitialAssessmentController::class, 'preferencesStep'])->name('preferences');
+        Route::post('/preferences', [InitialAssessmentController::class, 'savePreferences'])->name('preferences.save');
+        Route::get('/complete', [InitialAssessmentController::class, 'complete'])->name('complete');
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Routes nécessitant l'évaluation initiale complétée
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware('assessment.completed')->group(function () {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Tableau de Bord
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Apprentissage - Niveaux
+        |--------------------------------------------------------------------------
+        */
+        Route::prefix('levels')->name('level.')->group(function () {
+            Route::get('/', [LevelController::class, 'index'])->name('index');
+            Route::get('/{code}', [LevelController::class, 'show'])->name('show');
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Apprentissage - Chapitres
+        |--------------------------------------------------------------------------
+        */
+        Route::prefix('chapters')->name('chapter.')->group(function () {
+            Route::get('/', [ChapterController::class, 'index'])->name('index');
+            Route::get('/level/{levelCode}', [ChapterController::class, 'index'])->name('by-level');
+            Route::get('/{slug}', [ChapterController::class, 'show'])->name('show');
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Apprentissage - Leçons
+        |--------------------------------------------------------------------------
+        */
+        Route::prefix('lessons')->name('lesson.')->group(function () {
+            Route::get('/{chapterSlug}/{lessonSlug}', [LessonController::class, 'show'])->name('show');
+            Route::post('/{lessonId}/complete', [LessonController::class, 'complete'])->name('complete');
+            Route::post('/{lessonId}/ask-ai', [LessonController::class, 'askAI'])->name('ask-ai');
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Évaluations (Quiz et Contrôles)
+        |--------------------------------------------------------------------------
+        */
+        Route::prefix('assessments')->name('assessment.')->group(function () {
+            Route::get('/{assessmentId}/start', [AssessmentController::class, 'start'])->name('start');
+            Route::post('/{assessmentId}/submit', [AssessmentController::class, 'submit'])->name('submit');
+            Route::get('/result/{resultId}', [AssessmentController::class, 'result'])->name('result');
+            Route::get('/{assessmentId}/retry', [AssessmentController::class, 'retry'])->name('retry');
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Progression
+        |--------------------------------------------------------------------------
+        */
+        Route::prefix('progress')->name('progress.')->group(function () {
+            Route::get('/', [ProgressController::class, 'index'])->name('index');
+            Route::get('/history', [ProgressController::class, 'history'])->name('history');
+            Route::get('/assessments', [ProgressController::class, 'assessments'])->name('assessments');
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Récompenses
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/achievements', [AchievementController::class, 'index'])->name('achievement.index');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Profil
+        |--------------------------------------------------------------------------
+        */
+        Route::prefix('profile')->name('profile.')->group(function () {
+            Route::get('/', [ProfileController::class, 'show'])->name('show');
+            Route::get('/edit', [ProfileController::class, 'edit'])->name('edit');
+            Route::put('/', [ProfileController::class, 'update'])->name('update');
+            Route::put('/password', [ProfileController::class, 'updatePassword'])->name('password.update');
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Préférences
+        |--------------------------------------------------------------------------
+        */
+        Route::prefix('preferences')->name('preferences.')->group(function () {
+            Route::get('/', [PreferenceController::class, 'edit'])->name('edit');
+            Route::put('/', [PreferenceController::class, 'update'])->name('update');
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Conversations IA
+        |--------------------------------------------------------------------------
+        */
+        Route::prefix('ai')->name('ai.')->group(function () {
+            Route::post('/ask', [AIConversationController::class, 'ask'])->name('ask');
+            Route::get('/history', [AIConversationController::class, 'history'])->name('history');
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Notifications
+        |--------------------------------------------------------------------------
+        */
+        Route::prefix('notifications')->name('notification.')->group(function () {
+            Route::get('/', [NotificationController::class, 'index'])->name('index');
+            Route::post('/{id}/read', [NotificationController::class, 'markAsRead'])->name('read');
+            Route::post('/read-all', [NotificationController::class, 'markAllAsRead'])->name('read-all');
+            Route::delete('/{id}', [NotificationController::class, 'destroy'])->name('destroy');
+            Route::get('/unread-count', [NotificationController::class, 'getUnreadCount'])->name('unread-count');
+        });
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Routes API (pour les requêtes AJAX)
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('api')->middleware('auth')->group(function () {
+    Route::post('/ai/ask', [AIConversationController::class, 'ask']);
+    Route::get('/notifications/unread-count', [NotificationController::class, 'getUnreadCount']);
+});
+```
+
+---
+
+## 4. Middleware Personnalisé
+
+```php
+<?php
+// app/Http/Middleware/EnsureAssessmentCompleted.php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class EnsureAssessmentCompleted
+{
+    public function handle(Request $request, Closure $next)
+    {
+        if (Auth::check() && !Auth::user()->initial_assessment_completed) {
+            return redirect()->route('initial-assessment.start');
+        }
+
+        return $next($request);
+    }
+}
+```
+
+```php
+<?php
+// app/Http/Kernel.php (ajouter dans $routeMiddleware)
+
+protected $routeMiddleware = [
+    // ... autres middlewares
+    'assessment.completed' => \App\Http\Middleware\EnsureAssessmentCompleted::class,
+];
+```
+
+---
+
+## 5. Seeders Complets avec Données de Test
+
+### DatabaseSeeder
+
+```php
+<?php
+// database/seeders/DatabaseSeeder.php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+
+class DatabaseSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $this->call([
+            LevelSeeder::class,
+            ChapterSeeder::class,
+            LessonSeeder::class,
+            AssessmentSeeder::class,
+            QuestionSeeder::class,
+            InitialAssessmentQuestionSeeder::class,
+            AchievementSeeder::class,
+            UserSeeder::class,
+        ]);
+    }
+}
+```
+
+### LevelSeeder
+
+```php
+<?php
+// database/seeders/LevelSeeder.php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+
+class LevelSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $levels = [
+            [
+                'id' => 1,
+                'name' => '3ème Secondaire',
+                'code' => '3SEC',
+                'description' => 'Troisième année du cycle secondaire - Introduction à la chimie. Ce niveau couvre les fondamentaux de la chimie incluant la structure de la matière, les éléments chimiques et les premières réactions.',
+                'order' => 1,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 2,
+                'name' => '4ème Secondaire',
+                'code' => '4SEC',
+                'description' => 'Quatrième année du cycle secondaire - Chimie fondamentale. Approfondissement des notions de base avec introduction aux liaisons chimiques et aux calculs stœchiométriques.',
+                'order' => 2,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ];
+
+        DB::table('levels')->insert($levels);
+    }
+}
+```
+
+### ChapterSeeder
+
+```php
+<?php
+// database/seeders/ChapterSeeder.php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+
+class ChapterSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $chapters = [
+            // Chapitres pour 3ème Secondaire
+            [
+                'id' => 1,
+                'level_id' => 1,
+                'title' => 'La Matière et ses États',
+                'slug' => 'la-matiere-et-ses-etats',
+                'description' => 'Ce chapitre introduit les concepts fondamentaux de la matière, ses propriétés et ses trois états physiques : solide, liquide et gazeux.',
+                'objectives' => json_encode([
+                    'Définir la matière et ses propriétés',
+                    'Distinguer les trois états de la matière',
+                    'Expliquer les changements d\'état',
+                    'Identifier des exemples dans la vie quotidienne au Congo'
+                ]),
+                'order' => 1,
+                'estimated_duration_minutes' => 120,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 2,
+                'level_id' => 1,
+                'title' => 'L\'Atome et sa Structure',
+                'slug' => 'l-atome-et-sa-structure',
+                'description' => 'Découverte de l\'atome comme constituant fondamental de la matière, sa structure interne avec le noyau et les électrons.',
+                'objectives' => json_encode([
+                    'Décrire la structure de l\'atome',
+                    'Identifier les particules subatomiques',
+                    'Comprendre la notion de numéro atomique',
+                    'Utiliser la notation atomique'
+                ]),
+                'order' => 2,
+                'estimated_duration_minutes' => 150,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            // Chapitres pour 4ème Secondaire
+            [
+                'id' => 3,
+                'level_id' => 2,
+                'title' => 'Le Tableau Périodique des Éléments',
+                'slug' => 'le-tableau-periodique-des-elements',
+                'description' => 'Étude approfondie du tableau périodique, son organisation et les propriétés périodiques des éléments.',
+                'objectives' => json_encode([
+                    'Comprendre l\'organisation du tableau périodique',
+                    'Identifier les familles chimiques',
+                    'Prédire les propriétés des éléments',
+                    'Utiliser le tableau pour résoudre des problèmes'
+                ]),
+                'order' => 1,
+                'estimated_duration_minutes' => 180,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 4,
+                'level_id' => 2,
+                'title' => 'Les Liaisons Chimiques',
+                'slug' => 'les-liaisons-chimiques',
+                'description' => 'Comprendre comment les atomes se lient pour former des molécules et des composés chimiques.',
+                'objectives' => json_encode([
+                    'Distinguer les types de liaisons chimiques',
+                    'Expliquer la liaison covalente',
+                    'Expliquer la liaison ionique',
+                    'Représenter les molécules avec la notation de Lewis'
+                ]),
+                'order' => 2,
+                'estimated_duration_minutes' => 200,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ];
+
+        DB::table('chapters')->insert($chapters);
+    }
+}
+```
+
+### LessonSeeder
+
+```php
+<?php
+// database/seeders/LessonSeeder.php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+
+class LessonSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $lessons = [
+            // Leçons du chapitre "La Matière et ses États"
+            [
+                'id' => 1,
+                'chapter_id' => 1,
+                'title' => 'Qu\'est-ce que la Matière ?',
+                'slug' => 'qu-est-ce-que-la-matiere',
+                'introduction' => 'Bienvenue dans cette première leçon ! Nous allons découvrir ensemble ce qu\'est la matière, un concept fondamental en chimie. Tout ce qui nous entoure est fait de matière : l\'eau du fleuve Congo, l\'air que nous respirons, les métaux de nos téléphones...',
+                'content' => 'La matière est tout ce qui a une masse et occupe un espace (volume). Elle est constituée de particules microscopiques appelées atomes et molécules.
+
+## Propriétés de la matière
+
+La matière possède deux types de propriétés :
+
+Les propriétés physiques sont observables sans modifier la nature de la substance. Par exemple, la couleur, l\'odeur, la densité, le point de fusion et le point d\'ébullition sont des propriétés physiques. L\'eau bout à 100°C et gèle à 0°C sous pression atmosphérique normale.
+
+Les propriétés chimiques décrivent la capacité d\'une substance à se transformer en une autre. Par exemple, le fer peut rouiller en présence d\'oxygène et d\'humidité, formant de l\'oxyde de fer. Le bois peut brûler pour produire du dioxyde de carbone et de la cendre.
+
+## La masse et le volume
+
+La masse mesure la quantité de matière dans un objet. Elle se mesure en kilogrammes (kg) ou en grammes (g). La masse reste constante peu importe où se trouve l\'objet.
+
+Le volume mesure l\'espace occupé par la matière. Il se mesure en mètres cubes (m³) ou en litres (L). Pour les solides réguliers, on peut calculer le volume avec des formules géométriques. Pour les liquides et les solides irréguliers, on utilise des instruments de mesure comme l\'éprouvette graduée.
+
+## Exemples au Congo
+
+Considérons quelques exemples de matière présents dans notre environnement quotidien au Congo. Le manioc contient de l\'amidon, une matière organique essentielle pour notre alimentation. Le cuivre extrait des mines du Katanga est une matière métallique utilisée dans l\'industrie électrique mondiale. L\'eau du fleuve Congo est de la matière à l\'état liquide qui soutient tout un écosystème.',
+                'math_demonstrations' => json_encode([
+                    [
+                        'title' => 'Calcul de la densité',
+                        'formula' => 'ρ = m / V',
+                        'explanation' => 'La densité (ρ) est le rapport entre la masse (m) et le volume (V)',
+                        'example' => 'Si un bloc de cuivre a une masse de 89,6 g et un volume de 10 cm³, sa densité est : ρ = 89,6 g / 10 cm³ = 8,96 g/cm³'
+                    ]
+                ]),
+                'practical_examples' => json_encode([
+                    'L\'huile de palme flotte sur l\'eau car sa densité est inférieure à celle de l\'eau',
+                    'Le fer coule dans l\'eau car sa densité est supérieure à celle de l\'eau',
+                    'L\'or est très dense, c\'est pourquoi il est si lourd pour sa taille'
+                ]),
+                'summary' => 'La matière est tout ce qui possède une masse et occupe un volume. Elle possède des propriétés physiques (observables) et chimiques (transformation). La densité est une propriété importante qui relie la masse au volume.',
+                'keywords' => json_encode(['matière', 'masse', 'volume', 'densité', 'propriétés physiques', 'propriétés chimiques']),
+                'order' => 1,
+                'estimated_duration_minutes' => 30,
+                'difficulty' => 'easy',
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 2,
+                'chapter_id' => 1,
+                'title' => 'Les Trois États de la Matière',
+                'slug' => 'les-trois-etats-de-la-matiere',
+                'introduction' => 'Dans cette leçon, nous allons explorer les trois états dans lesquels la matière peut exister. Pensez à l\'eau : elle peut être liquide dans votre verre, solide sous forme de glace, ou gazeuse sous forme de vapeur. Comprendre ces états est essentiel pour saisir le comportement de la matière.',
+                'content' => 'La matière existe sous trois états principaux : solide, liquide et gazeux. Chaque état a des propriétés distinctes qui dépendent de l\'arrangement et du mouvement des particules.
+
+## L\'état solide
+
+Dans un solide, les particules sont très rapprochées et organisées de façon régulière. Elles vibrent sur place mais ne peuvent pas se déplacer librement. C\'est pourquoi les solides ont une forme propre et un volume défini.
+
+Les caractéristiques de l\'état solide incluent une forme fixe qui ne dépend pas du récipient, un volume constant, une incompressibilité pratique, et une densité généralement élevée.
+
+Exemples au Congo : le diamant extrait du Kasaï, le sel de cuisine, les minerais de coltan.
+
+## L\'état liquide
+
+Dans un liquide, les particules sont proches mais peuvent glisser les unes sur les autres. Elles sont moins ordonnées que dans un solide.
+
+Les liquides n\'ont pas de forme propre et prennent la forme de leur récipient. Ils ont un volume défini et constant, sont pratiquement incompressibles, et peuvent s\'écouler.
+
+Exemples au Congo : l\'eau du fleuve Congo, l\'huile de palme, le pétrole brut.
+
+## L\'état gazeux
+
+Dans un gaz, les particules sont très éloignées les unes des autres et se déplacent très rapidement dans toutes les directions. Il y a très peu d\'interactions entre elles.
+
+Les gaz n\'ont ni forme propre ni volume propre : ils occupent tout l\'espace disponible. Ils sont très compressibles et ont une densité faible.
+
+Exemples au Congo : l\'air que nous respirons, le gaz méthane du lac Kivu, la vapeur d\'eau dans l\'atmosphère équatoriale.
+
+## Comparaison des trois états
+
+Pour comparer les trois états, considérons l\'eau comme exemple universel. À l\'état solide (glace), les molécules d\'eau sont fixes et ordonnées, la glace a une forme et un volume définis. À l\'état liquide (eau), les molécules peuvent bouger mais restent proches, l\'eau prend la forme de son contenant tout en gardant son volume. À l\'état gazeux (vapeur), les molécules sont libres et éloignées, la vapeur remplit tout l\'espace disponible.',
+                'math_demonstrations' => json_encode([
+                    [
+                        'title' => 'Comparaison des volumes',
+                        'formula' => 'V_gaz >> V_liquide ≈ V_solide',
+                        'explanation' => 'Un même nombre de molécules occupe un volume beaucoup plus grand à l\'état gazeux',
+                        'example' => '1 L d\'eau liquide produit environ 1700 L de vapeur d\'eau à 100°C et pression atmosphérique'
+                    ]
+                ]),
+                'practical_examples' => json_encode([
+                    'La rosée du matin : la vapeur d\'eau de l\'air se condense en gouttelettes sur les feuilles',
+                    'Les glaçons dans une boisson : le solide fond pour devenir liquide',
+                    'L\'eau qui bout dans une marmite : le liquide se transforme en vapeur'
+                ]),
+                'summary' => 'La matière existe sous trois états : solide (forme et volume fixes), liquide (volume fixe, forme variable) et gazeux (ni forme ni volume fixes). Ces états dépendent de l\'arrangement et de l\'énergie des particules.',
+                'keywords' => json_encode(['état solide', 'état liquide', 'état gazeux', 'particules', 'arrangement moléculaire']),
+                'order' => 2,
+                'estimated_duration_minutes' => 35,
+                'difficulty' => 'easy',
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            // Leçons du chapitre "L'Atome et sa Structure"
+            [
+                'id' => 3,
+                'chapter_id' => 2,
+                'title' => 'Histoire de la Découverte de l\'Atome',
+                'slug' => 'histoire-decouverte-atome',
+                'introduction' => 'Comment les scientifiques ont-ils découvert que toute la matière est faite de minuscules particules appelées atomes ? Cette leçon retrace les grandes étapes de cette découverte fascinante, depuis la Grèce antique jusqu\'à nos jours.',
+                'content' => 'L\'idée que la matière est constituée de petites particules indivisibles est très ancienne. Découvrons comment cette idée a évolué au fil des siècles.
+
+## Les philosophes grecs (5ème siècle avant J.-C.)
+
+Démocrite, un philosophe grec, a proposé que toute matière est composée de particules minuscules et indivisibles qu\'il a appelées "atomos" (du grec "a-tomos" signifiant "qu\'on ne peut couper"). Pour lui, ces atomes étaient solides, éternels et se différenciaient par leur forme et leur taille.
+
+Cependant, cette théorie est restée philosophique car Démocrite n\'avait aucun moyen de prouver expérimentalement ses idées.
+
+## John Dalton et le modèle atomique moderne (1803)
+
+Le scientifique anglais John Dalton a développé la première théorie atomique basée sur des expériences scientifiques. Selon lui, chaque élément est composé d\'atomes identiques entre eux. Les atomes de différents éléments ont des masses différentes. Les atomes ne peuvent être ni créés, ni détruits, ni divisés. Les réactions chimiques réarrangent les atomes mais ne les modifient pas.
+
+La théorie de Dalton a permis d\'expliquer les lois de la conservation de la masse et des proportions définies.
+
+## J.J. Thomson et l\'électron (1897)
+
+Le physicien britannique Joseph John Thomson a découvert l\'électron, une particule négative présente dans tous les atomes. Il a proposé le modèle du "pudding aux prunes" : l\'atome serait une sphère positive dans laquelle les électrons négatifs sont dispersés comme des prunes dans un pudding.
+
+Cette découverte a montré que l\'atome n\'était pas indivisible comme le pensait Démocrite.
+
+## Ernest Rutherford et le noyau atomique (1911)
+
+Rutherford a réalisé une expérience célèbre en bombardant une fine feuille d\'or avec des particules alpha. Il a découvert que l\'atome est surtout constitué de vide, que presque toute la masse est concentrée dans un noyau central positif très petit, et que les électrons gravitent autour du noyau.
+
+## Le modèle actuel de l\'atome
+
+Aujourd\'hui, nous savons que l\'atome est constitué d\'un noyau contenant des protons (positifs) et des neutrons (neutres), entouré d\'électrons (négatifs) qui se déplacent dans des zones appelées orbitales.',
+                'math_demonstrations' => null,
+                'practical_examples' => json_encode([
+                    'L\'or est un élément chimique : tous les atomes d\'or sont identiques',
+                    'L\'eau est un composé : chaque molécule contient 2 atomes d\'hydrogène et 1 atome d\'oxygène',
+                    'Lors de la digestion, les molécules des aliments sont réarrangées mais les atomes restent intacts'
+                ]),
+                'summary' => 'La théorie atomique a évolué de Démocrite (atome indivisible) à Dalton (théorie scientifique) puis Thomson (découverte de l\'électron) et Rutherford (découverte du noyau). L\'atome est constitué d\'un noyau (protons et neutrons) entouré d\'électrons.',
+                'keywords' => json_encode(['atome', 'Démocrite', 'Dalton', 'Thomson', 'Rutherford', 'électron', 'noyau']),
+                'order' => 1,
+                'estimated_duration_minutes' => 40,
+                'difficulty' => 'medium',
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 4,
+                'chapter_id' => 2,
+                'title' => 'La Structure de l\'Atome',
+                'slug' => 'structure-de-l-atome',
+                'introduction' => 'Maintenant que nous connaissons l\'histoire de la découverte de l\'atome, plongeons au cœur de sa structure. Quelles sont les particules qui le composent ? Comment sont-elles organisées ? Découvrons ensemble l\'architecture fascinante de l\'atome.',
+                'content' => 'L\'atome est constitué de deux parties principales : le noyau central et le nuage électronique qui l\'entoure.
+
+## Le noyau atomique
+
+Le noyau est situé au centre de l\'atome. Il est extrêmement petit par rapport à la taille totale de l\'atome, mais contient presque toute sa masse.
+
+Le noyau contient deux types de particules appelées nucléons. Les protons sont des particules de charge positive (+). Chaque proton porte une charge de +1. Le nombre de protons définit l\'élément chimique et s\'appelle le numéro atomique (Z). Les neutrons sont des particules sans charge (neutres). Ils contribuent à la masse de l\'atome et à la stabilité du noyau.
+
+Le nombre de masse (A) est la somme des protons et des neutrons dans le noyau.
+
+## Les électrons
+
+Les électrons sont des particules de charge négative (-) qui se déplacent autour du noyau dans des régions appelées orbitales ou couches électroniques. Chaque électron porte une charge de -1. La masse d\'un électron est environ 1836 fois plus petite que celle d\'un proton.
+
+Dans un atome neutre, le nombre d\'électrons est égal au nombre de protons.
+
+## Notation atomique
+
+On représente un atome par son symbole chimique accompagné de deux nombres : le numéro atomique Z en bas à gauche et le nombre de masse A en haut à gauche.
+
+Par exemple, pour le carbone-12, on écrit le symbole C avec A=12 et Z=6. Cela signifie que cet atome possède 6 protons (Z=6), 6 neutrons (A-Z = 12-6 = 6), et 6 électrons (car l\'atome est neutre).
+
+## Dimensions de l\'atome
+
+Pour mieux comprendre les dimensions de l\'atome, imaginons une analogie. Si le noyau était de la taille d\'une bille (1 cm), l\'atome entier aurait la taille d\'un stade de football (100 m). Le reste est essentiellement du vide !
+
+Le diamètre du noyau est d\'environ 10⁻¹⁵ m tandis que le diamètre de l\'atome est d\'environ 10⁻¹⁰ m. Le noyau est donc 100 000 fois plus petit que l\'atome lui-même.
+
+## Les isotopes
+
+Les isotopes sont des atomes d\'un même élément qui ont le même nombre de protons mais un nombre différent de neutrons.
+
+Exemple : Le carbone a trois isotopes naturels. Le carbone-12 a 6 protons et 6 neutrons (stable, le plus abondant). Le carbone-13 a 6 protons et 7 neutrons (stable, utilisé en spectroscopie). Le carbone-14 a 6 protons et 8 neutrons (radioactif, utilisé pour la datation).',
+                'math_demonstrations' => json_encode([
+                    [
+                        'title' => 'Calcul du nombre de neutrons',
+                        'formula' => 'N = A - Z',
+                        'explanation' => 'Le nombre de neutrons (N) égale le nombre de masse (A) moins le numéro atomique (Z)',
+                        'example' => 'Pour l\'oxygène-18 : A = 18, Z = 8, donc N = 18 - 8 = 10 neutrons'
+                    ],
+                    [
+                        'title' => 'Masse atomique approximative',
+                        'formula' => 'm ≈ A × 1,66 × 10⁻²⁷ kg',
+                        'explanation' => 'La masse d\'un atome est approximativement égale au nombre de masse multiplié par la masse d\'un nucléon',
+                        'example' => 'Pour le carbone-12 : m ≈ 12 × 1,66 × 10⁻²⁷ = 1,99 × 10⁻²⁶ kg'
+                    ]
+                ]),
+                'practical_examples' => json_encode([
+                    'Le cobalt-60 (isotope radioactif) est utilisé en médecine pour traiter certains cancers',
+                    'L\'uranium-235 (isotope fissile) est utilisé comme combustible nucléaire',
+                    'Le carbone-14 permet de dater des objets anciens comme les fossiles'
+                ]),
+                'summary' => 'L\'atome est constitué d\'un noyau (protons + neutrons) et d\'électrons. Le numéro atomique (Z) = nombre de protons. Le nombre de masse (A) = protons + neutrons. Les isotopes sont des atomes d\'un même élément avec des nombres de neutrons différents.',
+                'keywords' => json_encode(['noyau', 'proton', 'neutron', 'électron', 'numéro atomique', 'nombre de masse', 'isotope']),
+                'order' => 2,
+                'estimated_duration_minutes' => 45,
+                'difficulty' => 'medium',
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ];
+
+        DB::table('lessons')->insert($lessons);
+    }
+}
+```
+
+### AssessmentSeeder
+
+```php
+<?php
+// database/seeders/AssessmentSeeder.php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+
+class AssessmentSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $assessments = [
+            // Mini-quiz pour "Qu'est-ce que la Matière ?"
+            [
+                'id' => 1,
+                'lesson_id' => 1,
+                'title' => 'Mini-Quiz : La Matière',
+                'type' => 'mini_quiz',
+                'instructions' => 'Répondez à ces questions rapides pour vérifier votre compréhension.',
+                'total_points' => 30,
+                'passing_score' => 60,
+                'time_limit_minutes' => null,
+                'max_attempts' => 10,
+                'shuffle_questions' => false,
+                'show_correct_answers' => true,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            // Contrôle de fin de leçon pour "Qu'est-ce que la Matière ?"
+            [
+                'id' => 2,
+                'lesson_id' => 1,
+                'title' => 'Contrôle : Qu\'est-ce que la Matière ?',
+                'type' => 'end_lesson_control',
+                'instructions' => 'Ce contrôle évalue votre compréhension de la leçon sur la matière. Vous avez 3 tentatives maximum. Un score de 70% est requis pour valider la leçon.',
+                'total_points' => 100,
+                'passing_score' => 70,
+                'time_limit_minutes' => 20,
+                'max_attempts' => 3,
+                'shuffle_questions' => true,
+                'show_correct_answers' => true,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            // Mini-quiz pour "Les Trois États de la Matière"
+            [
+                'id' => 3,
+                'lesson_id' => 2,
+                'title' => 'Mini-Quiz : Les États de la Matière',
+                'type' => 'mini_quiz',
+                'instructions' => 'Testez rapidement vos connaissances sur les trois états de la matière.',
+                'total_points' => 30,
+                'passing_score' => 60,
+                'time_limit_minutes' => null,
+                'max_attempts' => 10,
+                'shuffle_questions' => false,
+                'show_correct_answers' => true,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            // Contrôle de fin de leçon pour "Les Trois États de la Matière"
+            [
+                'id' => 4,
+                'lesson_id' => 2,
+                'title' => 'Contrôle : Les Trois États de la Matière',
+                'type' => 'end_lesson_control',
+                'instructions' => 'Évaluation complète sur les trois états de la matière. Score minimum requis : 70%.',
+                'total_points' => 100,
+                'passing_score' => 70,
+                'time_limit_minutes' => 25,
+                'max_attempts' => 3,
+                'shuffle_questions' => true,
+                'show_correct_answers' => true,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ];
+
+        DB::table('assessments')->insert($assessments);
+    }
+}
+```
+
+### QuestionSeeder
+
+```php
+<?php
+// database/seeders/QuestionSeeder.php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+
+class QuestionSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $questions = [
+            // Questions pour Mini-Quiz "La Matière" (assessment_id = 1)
+            [
+                'id' => 1,
+                'assessment_id' => 1,
+                'question_text' => 'Qu\'est-ce que la matière ?',
+                'question_type' => 'mcq',
+                'options' => json_encode([
+                    'A' => 'Tout ce qui a une couleur',
+                    'B' => 'Tout ce qui a une masse et occupe un volume',
+                    'C' => 'Tout ce qui est visible',
+                    'D' => 'Tout ce qui est solide'
+                ]),
+                'correct_answer' => 'B',
+                'explanation' => 'La matière est définie comme tout ce qui possède une masse (quantité de matière) et occupe un espace (volume). Cela inclut les solides, les liquides et les gaz, qu\'ils soient visibles ou non.',
+                'points' => 10,
+                'order' => 1,
+                'difficulty' => 'easy',
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 2,
+                'assessment_id' => 1,
+                'question_text' => 'La densité est le rapport entre :',
+                'question_type' => 'mcq',
+                'options' => json_encode([
+                    'A' => 'La masse et le temps',
+                    'B' => 'Le volume et la température',
+                    'C' => 'La masse et le volume',
+                    'D' => 'La longueur et la largeur'
+                ]),
+                'correct_answer' => 'C',
+                'explanation' => 'La densité (ρ) est définie par la formule ρ = m/V, où m est la masse et V est le volume. Elle exprime combien de masse est contenue dans une unité de volume.',
+                'points' => 10,
+                'order' => 2,
+                'difficulty' => 'easy',
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            // Questions pour Contrôle "La Matière" (assessment_id = 2)
+            [
+                'id' => 3,
+                'assessment_id' => 2,
+                'question_text' => 'Les propriétés physiques de la matière sont celles qui :',
+                'question_type' => 'mcq',
+                'options' => json_encode([
+                    'A' => 'Modifient la nature de la substance',
+                    'B' => 'Sont observables sans modifier la nature de la substance',
+                    'C' => 'Ne peuvent jamais être mesurées',
+                    'D' => 'Concernent uniquement les gaz'
+                ]),
+                'correct_answer' => 'B',
+                'explanation' => 'Les propriétés physiques (couleur, densité, point de fusion, etc.) peuvent être observées ou mesurées sans changer la composition chimique de la substance.',
+                'points' => 15,
+                'order' => 1,
+                'difficulty' => 'easy',
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 4,
+                'assessment_id' => 2,
+                'question_text' => 'Un bloc de fer a une masse de 156 g et un volume de 20 cm³. Calculez sa densité.',
+                'question_type' => 'calculation',
+                'options' => null,
+                'correct_answer' => '7.8',
+                'explanation' => 'Densité = masse / volume = 156 g / 20 cm³ = 7,8 g/cm³. La densité du fer est d\'environ 7,8 g/cm³, ce qui correspond à la valeur théorique.',
+                'points' => 25,
+                'order' => 2,
+                'difficulty' => 'medium',
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 5,
+                'assessment_id' => 2,
+                'question_text' => 'La rouille du fer est un exemple de propriété physique.',
+                'question_type' => 'true_false',
+                'options' => json_encode(['Vrai' => 'Vrai', 'Faux' => 'Faux']),
+                'correct_answer' => 'Faux',
+                'explanation' => 'La rouille (oxydation du fer) est une propriété chimique car elle implique une transformation de la substance : le fer réagit avec l\'oxygène pour former de l\'oxyde de fer (rouille), un composé différent.',
+                'points' => 15,
+                'order' => 3,
+                'difficulty' => 'easy',
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 6,
+                'assessment_id' => 2,
+                'question_text' => 'Citez deux propriétés physiques de l\'eau.',
+                'question_type' => 'short_answer',
+                'options' => null,
+                'correct_answer' => 'point d\'ébullition 100°C, point de fusion 0°C, liquide incolore, densité 1 g/cm³',
+                'explanation' => 'Les propriétés physiques de l\'eau incluent : son point d\'ébullition (100°C), son point de fusion (0°C), sa densité (1 g/cm³), sa couleur (incolore), son absence d\'odeur, etc.',
+                'points' => 20,
+                'order' => 4,
+                'difficulty' => 'medium',
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            // Questions pour Mini-Quiz "États de la Matière" (assessment_id = 3)
+            [
+                'id' => 7,
+                'assessment_id' => 3,
+                'question_text' => 'Dans quel état les particules sont-elles les plus éloignées les unes des autres ?',
+                'question_type' => 'mcq',
+                'options' => json_encode([
+                    'A' => 'Solide',
+                    'B' => 'Liquide',
+                    'C' => 'Gazeux',
+                    'D' => 'Elles sont toujours à la même distance'
+                ]),
+                'correct_answer' => 'C',
+                'explanation' => 'Dans un gaz, les particules sont très éloignées les unes des autres et se déplacent librement dans toutes les directions. C\'est pourquoi les gaz sont compressibles et occupent tout l\'espace disponible.',
+                'points' => 10,
+                'order' => 1,
+                'difficulty' => 'easy',
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 8,
+                'assessment_id' => 3,
+                'question_text' => 'Un liquide a un volume fixe mais pas de forme propre.',
+                'question_type' => 'true_false',
+                'options' => json_encode(['Vrai' => 'Vrai', 'Faux' => 'Faux']),
+                'correct_answer' => 'Vrai',
+                'explanation' => 'C\'est exact ! Un liquide conserve son volume (il est pratiquement incompressible) mais prend la forme de son récipient car ses particules peuvent glisser les unes sur les autres.',
+                'points' => 10,
+                'order' => 2,
+                'difficulty' => 'easy',
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            // Questions pour Contrôle "États de la Matière" (assessment_id = 4)
+            [
+                'id' => 9,
+                'assessment_id' => 4,
+                'question_text' => 'Quelle propriété distingue principalement un solide d\'un liquide ?',
+                'question_type' => 'mcq',
+                'options' => json_encode([
+                    'A' => 'Le solide a une masse, le liquide non',
+                    'B' => 'Le solide a une forme propre, le liquide non',
+                    'C' => 'Le solide est toujours froid',
+                    'D' => 'Le liquide est toujours transparent'
+                ]),
+                'correct_answer' => 'B',
+                'explanation' => 'La différence fondamentale est que le solide a une forme propre (ses particules sont fixes) tandis que le liquide prend la forme de son contenant (ses particules peuvent se déplacer).',
+                'points' => 15,
+                'order' => 1,
+                'difficulty' => 'easy',
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 10,
+                'assessment_id' => 4,
+                'question_text' => 'Expliquez pourquoi les gaz sont compressibles mais pas les liquides.',
+                'question_type' => 'short_answer',
+                'options' => null,
+                'correct_answer' => 'particules éloignées gaz, particules proches liquide, espace vide gaz',
+                'explanation' => 'Dans un gaz, les particules sont très éloignées avec beaucoup d\'espace vide entre elles, ce qui permet de les rapprocher par compression. Dans un liquide, les particules sont déjà très proches, laissant peu d\'espace pour la compression.',
+                'points' => 25,
+                'order' => 2,
+                'difficulty' => 'medium',
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ];
+
+        DB::table('questions')->insert($questions);
+    }
+}
+```
+
+### InitialAssessmentQuestionSeeder
+
+```php
+<?php
+// database/seeders/InitialAssessmentQuestionSeeder.php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+
+class InitialAssessmentQuestionSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $questions = [
+            // Questions de niveau facile (3ème secondaire)
+            [
+                'id' => 1,
+                'level_id' => 1,
+                'question_text' => 'Quel est le symbole chimique de l\'eau ?',
+                'question_type' => 'mcq',
+                'options' => json_encode([
+                    'A' => 'H2O',
+                    'B' => 'CO2',
+                    'C' => 'NaCl',
+                    'D' => 'O2'
+                ]),
+                'correct_answer' => 'A',
+                'difficulty_score' => 1,
+                'topic' => 'Molécules et formules',
+                'order' => 1,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 2,
+                'level_id' => 1,
+                'question_text' => 'Combien y a-t-il d\'états de la matière principaux ?',
+                'question_type' => 'mcq',
+                'options' => json_encode([
+                    'A' => '2',
+                    'B' => '3',
+                    'C' => '4',
+                    'D' => '5'
+                ]),
+                'correct_answer' => 'B',
+                'difficulty_score' => 1,
+                'topic' => 'États de la matière',
+                'order' => 2,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            // Questions de niveau moyen (4ème secondaire)
+            [
+                'id' => 3,
+                'level_id' => 2,
+                'question_text' => 'Le numéro atomique d\'un élément représente :',
+                'question_type' => 'mcq',
+                'options' => json_encode([
+                    'A' => 'Le nombre de neutrons',
+                    'B' => 'Le nombre de protons',
+                    'C' => 'La masse atomique',
+                    'D' => 'Le nombre d\'électrons de valence'
+                ]),
+                'correct_answer' => 'B',
+                'difficulty_score' => 3,
+                'topic' => 'Structure atomique',
+                'order' => 3,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 4,
+                'level_id' => 2,
+                'question_text' => 'Dans le tableau périodique, les éléments d\'une même colonne ont :',
+                'question_type' => 'mcq',
+                'options' => json_encode([
+                    'A' => 'Le même nombre de masse',
+                    'B' => 'Le même nombre d\'électrons de valence',
+                    'C' => 'Le même nombre de neutrons',
+                    'D' => 'La même masse atomique'
+                ]),
+                'correct_answer' => 'B',
+                'difficulty_score' => 4,
+                'topic' => 'Tableau périodique',
+                'order' => 4,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ];
+
+        DB::table('initial_assessment_questions')->insert($questions);
+    }
+}
+```
+
+### AchievementSeeder
+
+```php
+<?php
+// database/seeders/AchievementSeeder.php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+
+class AchievementSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $achievements = [
+            [
+                'id' => 1,
+                'name' => 'Premier Pas',
+                'code' => 'first_lesson',
+                'description' => 'Félicitations ! Vous avez complété votre première leçon. C\'est le début d\'un beau parcours en chimie !',
+                'icon' => 'rocket',
+                'type' => 'lesson',
+                'criteria' => json_encode(['lessons_completed' => 1]),
+                'points_reward' => 10,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 2,
+                'name' => 'Étudiant Régulier',
+                'code' => 'streak_7',
+                'description' => 'Vous avez étudié pendant 7 jours consécutifs ! La régularité est la clé du succès.',
+                'icon' => 'fire',
+                'type' => 'streak',
+                'criteria' => json_encode(['streak_days' => 7]),
+                'points_reward' => 50,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ];
+
+        DB::table('achievements')->insert($achievements);
+    }
+}
+```
+
+### UserSeeder (avec données de test complètes)
+
+```php
+<?php
+// database/seeders/UserSeeder.php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+
+class UserSeeder extends Seeder
+{
+    public function run(): void
+    {
+        // Utilisateur 1 : Jean-Pierre (étudiant avancé)
+        DB::table('users')->insert([
+            'id' => 1,
+            'name' => 'Jean-Pierre Mukendi',
+            'email' => 'jeanpierre@example.com',
+            'email_verified_at' => now(),
+            'password' => Hash::make('password123'),
+            'initial_assessment_completed' => true,
+            'is_active' => true,
+            'last_login_at' => now(),
+            'created_at' => now()->subDays(30),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('user_profiles')->insert([
+            'id' => 1,
+            'user_id' => 1,
+            'age' => 17,
+            'declared_level_id' => 2, // 4ème Secondaire
+            'assessed_level_id' => 2,
+            'study_time_per_day' => 45,
+            'study_days_per_week' => 5,
+            'school_option' => 'Scientifique',
+            'school_name' => 'Lycée Bosangani',
+            'city' => 'Kinshasa',
+            'province' => 'Kinshasa',
+            'global_score' => 450,
+            'total_lessons_completed' => 3,
+            'total_assessments_passed' => 2,
+            'current_streak_days' => 5,
+            'longest_streak_days' => 12,
+            'last_activity_date' => now()->toDateString(),
+            'created_at' => now()->subDays(30),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('user_preferences')->insert([
+            'id' => 1,
+            'user_id' => 1,
+            'tone' => 'friendly',
+            'detail_level' => 'detailed',
+            'example_style' => 'mixed',
+            'show_math_steps' => true,
+            'enable_notifications' => true,
+            'enable_reminders' => true,
+            'preferred_study_time' => '18:00',
+            'language' => 'fr',
+            'created_at' => now()->subDays(30),
+            'updated_at' => now(),
+        ]);
+
+        // Utilisateur 2 : Marie (débutante)
+        DB::table('users')->insert([
+            'id' => 2,
+            'name' => 'Marie Kabongo',
+            'email' => 'marie@example.com',
+            'email_verified_at' => now(),
+            'password' => Hash::make('password123'),
+            'initial_assessment_completed' => true,
+            'is_active' => true,
+            'last_login_at' => now()->subDays(1),
+            'created_at' => now()->subDays(15),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('user_profiles')->insert([
+            'id' => 2,
+            'user_id' => 2,
+            'age' => 15,
+            'declared_level_id' => 1, // 3ème Secondaire
+            'assessed_level_id' => 1,
+            'study_time_per_day' => 30,
+            'study_days_per_week' => 4,
+            'school_option' => 'Scientifique',
+            'school_name' => 'Institut Mwana',
+            'city' => 'Lubumbashi',
+            'province' => 'Haut-Katanga',
+            'global_score' => 120,
+            'total_lessons_completed' => 1,
+            'total_assessments_passed' => 1,
+            'current_streak_days' => 2,
+            'longest_streak_days' => 4,
+            'last_activity_date' => now()->subDays(1)->toDateString(),
+            'created_at' => now()->subDays(15),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('user_preferences')->insert([
+            'id' => 2,
+            'user_id' => 2,
+            'tone' => 'casual',
+            'detail_level' => 'moderate',
+            'example_style' => 'everyday',
+            'show_math_steps' => true,
+            'enable_notifications' => true,
+            'enable_reminders' => true,
+            'preferred_study_time' => '16:00',
+            'language' => 'fr',
+            'created_at' => now()->subDays(15),
+            'updated_at' => now(),
+        ]);
+
+        // Progression de Jean-Pierre
+        DB::table('user_lesson_progress')->insert([
+            [
+                'user_id' => 1,
+                'lesson_id' => 1,
+                'status' => 'completed',
+                'progress_percentage' => 100,
+                'time_spent_minutes' => 35,
+                'started_at' => now()->subDays(25),
+                'completed_at' => now()->subDays(25),
+                'last_accessed_at' => now()->subDays(25),
+                'access_count' => 3,
+                'ai_notes' => 'Bonne compréhension des concepts de base. A posé des questions pertinentes sur la densité.',
+                'created_at' => now()->subDays(25),
+                'updated_at' => now()->subDays(25),
+            ],
+            [
+                'user_id' => 1,
+                'lesson_id' => 2,
+                'status' => 'completed',
+                'progress_percentage' => 100,
+                'time_spent_minutes' => 40,
+                'started_at' => now()->subDays(20),
+                'completed_at' => now()->subDays(20),
+                'last_accessed_at' => now()->subDays(20),
+                'access_count' => 2,
+                'ai_notes' => 'Excellente compréhension des états de la matière. Maîtrise bien les concepts de particules.',
+                'created_at' => now()->subDays(20),
+                'updated_at' => now()->subDays(20),
+            ],
+        ]);
+
+        // Progression de Marie
+        DB::table('user_lesson_progress')->insert([
+            [
+                'user_id' => 2,
+                'lesson_id' => 1,
+                'status' => 'completed',
+                'progress_percentage' => 100,
+                'time_spent_minutes' => 50,
+                'started_at' => now()->subDays(10),
+                'completed_at' => now()->subDays(9),
+                'last_accessed_at' => now()->subDays(9),
+                'access_count' => 4,
+                'ai_notes' => 'Progression régulière. A eu besoin de plus d\'explications sur la densité.',
+                'created_at' => now()->subDays(10),
+                'updated_at' => now()->subDays(9),
+            ],
+            [
+                'user_id' => 2,
+                'lesson_id' => 2,
+                'status' => 'in_progress',
+                'progress_percentage' => 60,
+                'time_spent_minutes' => 25,
+                'started_at' => now()->subDays(2),
+                'completed_at' => null,
+                'last_accessed_at' => now()->subDays(1),
+                'access_count' => 2,
+                'ai_notes' => null,
+                'created_at' => now()->subDays(2),
+                'updated_at' => now()->subDays(1),
+            ],
+        ]);
+
+        // Résultats d'évaluations
+        DB::table('user_assessment_results')->insert([
+            [
+                'id' => 1,
+                'user_id' => 1,
+                'assessment_id' => 2, // Contrôle "La Matière"
+                'score' => 85,
+                'percentage' => 85,
+                'passed' => true,
+                'attempt_number' => 1,
+                'time_taken_minutes' => 15,
+                'answers' => json_encode([3 => ['answer' => 'B', 'correct' => true], 4 => ['answer' => '7.8', 'correct' => true]]),
+                'ai_feedback' => 'Excellent travail Jean-Pierre ! Vous avez bien maîtrisé les concepts de la matière. Votre calcul de densité était parfait. Continuez ainsi !',
+                'weak_points' => json_encode([]),
+                'strong_points' => json_encode([3, 4]),
+                'started_at' => now()->subDays(25),
+                'completed_at' => now()->subDays(25),
+                'created_at' => now()->subDays(25),
+                'updated_at' => now()->subDays(25),
+            ],
+            [
+                'id' => 2,
+                'user_id' => 2,
+                'assessment_id' => 2, // Contrôle "La Matière"
+                'score' => 70,
+                'percentage' => 70,
+                'passed' => true,
+                'attempt_number' => 2,
+                'time_taken_minutes' => 18,
+                'answers' => json_encode([3 => ['answer' => 'B', 'correct' => true], 4 => ['answer' => '7.5', 'correct' => false]]),
+                'ai_feedback' => 'Bien joué Marie ! Vous avez validé ce contrôle. Attention aux calculs de densité, n\'oubliez pas de vérifier vos divisions. La pratique vous aidera à progresser.',
+                'weak_points' => json_encode([4]),
+                'strong_points' => json_encode([3]),
+                'started_at' => now()->subDays(8),
+                'completed_at' => now()->subDays(8),
+                'created_at' => now()->subDays(8),
+                'updated_at' => now()->subDays(8),
+            ],
+        ]);
+
+        // Évaluations initiales
+        DB::table('user_initial_assessments')->insert([
+            [
+                'id' => 1,
+                'user_id' => 1,
+                'responses' => json_encode([1 => ['answer' => 'A', 'correct' => true], 2 => ['answer' => 'B', 'correct' => true], 3 => ['answer' => 'B', 'correct' => true], 4 => ['answer' => 'B', 'correct' => true]]),
+                'total_score' => 9,
+                'recommended_level_id' => 2,
+                'topic_scores' => json_encode(['Molécules et formules' => ['correct' => 1, 'total' => 1], 'États de la matière' => ['correct' => 1, 'total' => 1], 'Structure atomique' => ['correct' => 1, 'total' => 1], 'Tableau périodique' => ['correct' => 1, 'total' => 1]]),
+                'ai_analysis' => 'Jean-Pierre démontre une excellente base en chimie. Il maîtrise les concepts fondamentaux et montre une compréhension solide de la structure atomique et du tableau périodique. Recommandation : commencer au niveau 4ème secondaire pour maintenir l\'engagement.',
+                'recommended_starting_chapters' => json_encode([3, 4]),
+                'completed_at' => now()->subDays(30),
+                'created_at' => now()->subDays(30),
+                'updated_at' => now()->subDays(30),
+            ],
+            [
+                'id' => 2,
+                'user_id' => 2,
+                'responses' => json_encode([1 => ['answer' => 'A', 'correct' => true], 2 => ['answer' => 'B', 'correct' => true], 3 => ['answer' => 'C', 'correct' => false], 4 => ['answer' => 'A', 'correct' => false]]),
+                'total_score' => 2,
+                'recommended_level_id' => 1,
+                'topic_scores' => json_encode(['Molécules et formules' => ['correct' => 1, 'total' => 1], 'États de la matière' => ['correct' => 1, 'total' => 1], 'Structure atomique' => ['correct' => 0, 'total' => 1], 'Tableau périodique' => ['correct' => 0, 'total' => 1]]),
+                'ai_analysis' => 'Marie a de bonnes bases sur les concepts élémentaires comme les molécules et les états de la matière. Elle a besoin de renforcer ses connaissances sur la structure atomique et le tableau périodique. Recommandation : commencer au niveau 3ème secondaire pour consolider les fondamentaux.',
+                'recommended_starting_chapters' => json_encode([1, 2]),
+                'completed_at' => now()->subDays(15),
+                'created_at' => now()->subDays(15),
+                'updated_at' => now()->subDays(15),
+            ],
+        ]);
+
+        // Conversations IA
+        DB::table('ai_conversations')->insert([
+            [
+                'id' => 1,
+                'user_id' => 1,
+                'lesson_id' => 1,
+                'context' => 'lesson_help',
+                'user_message' => 'Je ne comprends pas bien pourquoi l\'huile flotte sur l\'eau. Peux-tu m\'expliquer ?',
+                'ai_response' => 'Excellente question Jean-Pierre ! L\'huile flotte sur l\'eau car elle a une densité plus faible. La densité de l\'huile est environ 0,9 g/cm³, tandis que celle de l\'eau est de 1 g/cm³. Quand tu mets les deux liquides ensemble, le liquide le moins dense (l\'huile) monte au-dessus. C\'est le même principe qui fait flotter un ballon rempli d\'hélium dans l\'air !',
+                'metadata' => json_encode(['topic' => 'densité', 'satisfaction' => null]),
+                'created_at' => now()->subDays(25),
+                'updated_at' => now()->subDays(25),
+            ],
+            [
+                'id' => 2,
+                'user_id' => 2,
+                'lesson_id' => 1,
+                'context' => 'lesson_help',
+                'user_message' => 'Comment calculer la densité ? Je suis un peu perdue avec la formule.',
+                'ai_response' => 'Pas de souci Marie, je vais t\'expliquer simplement ! La formule de la densité est : densité = masse ÷ volume (ou ρ = m/V). Imagine que tu as un sac de riz de 5 kg qui prend un volume de 4 litres. La densité serait : 5 kg ÷ 4 L = 1,25 kg/L. C\'est comme demander "combien de kilogrammes je peux mettre dans 1 litre ?". Plus c\'est dense, plus c\'est lourd pour le même volume. Tu veux essayer avec un exemple concret ?',
+                'metadata' => json_encode(['topic' => 'densité', 'satisfaction' => 'positive']),
+                'created_at' => now()->subDays(10),
+                'updated_at' => now()->subDays(10),
+            ],
+        ]);
+
+        // Récompenses obtenues
+        DB::table('user_achievements')->insert([
+            [
+                'user_id' => 1,
+                'achievement_id' => 1, // Premier Pas
+                'earned_at' => now()->subDays(25),
+                'created_at' => now()->subDays(25),
+                'updated_at' => now()->subDays(25),
+            ],
+            [
+                'user_id' => 2,
+                'achievement_id' => 1, // Premier Pas
+                'earned_at' => now()->subDays(9),
+                'created_at' => now()->subDays(9),
+                'updated_at' => now()->subDays(9),
+            ],
+        ]);
+
+        // Notifications
+        DB::table('notifications')->insert([
+            [
+                'id' => 1,
+                'user_id' => 1,
+                'title' => 'Nouvelle récompense débloquée !',
+                'message' => 'Félicitations ! Vous avez obtenu le badge "Premier Pas" pour avoir complété votre première leçon.',
+                'type' => 'achievement',
+                'data' => json_encode(['achievement_id' => 1]),
+                'is_read' => true,
+                'read_at' => now()->subDays(24),
+                'created_at' => now()->subDays(25),
+                'updated_at' => now()->subDays(24),
+            ],
+            [
+                'id' => 2,
+                'user_id' => 1,
+                'title' => 'Continuez votre progression !',
+                'message' => 'Vous n\'avez pas étudié depuis 2 jours. Une petite leçon pour maintenir votre série ?',
+                'type' => 'reminder',
+                'data' => json_encode(['lesson_suggestion_id' => 3]),
+                'is_read' => false,
+                'read_at' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
+        // Sessions d'étude
+        DB::table('study_sessions')->insert([
+            [
+                'id' => 1,
+                'user_id' => 1,
+                'started_at' => now()->subDays(1)->setTime(18, 0),
+                'ended_at' => now()->subDays(1)->setTime(18, 45),
+                'duration_minutes' => 45,
+                'lessons_viewed' => 1,
+                'assessments_completed' => 0,
+                'questions_asked' => 1,
+                'activity_log' => json_encode([
+                    ['time' => '18:00', 'action' => 'lesson_start', 'lesson_id' => 3],
+                    ['time' => '18:30', 'action' => 'ai_question'],
+                    ['time' => '18:45', 'action' => 'session_end'],
+                ]),
+                'created_at' => now()->subDays(1),
+                'updated_at' => now()->subDays(1),
+            ],
+            [
+                'id' => 2,
+                'user_id' => 2,
+                'started_at' => now()->subDays(1)->setTime(16, 0),
+                'ended_at' => now()->subDays(1)->setTime(16, 30),
+                'duration_minutes' => 30,
+                'lessons_viewed' => 1,
+                'assessments_completed' => 0,
+                'questions_asked' => 0,
+                'activity_log' => json_encode([
+                    ['time' => '16:00', 'action' => 'lesson_continue', 'lesson_id' => 2],
+                    ['time' => '16:30', 'action' => 'session_end'],
+                ]),
+                'created_at' => now()->subDays(1),
+                'updated_at' => now()->subDays(1),
+            ],
+        ]);
+    }
+}
+```
+
+---
+
+Il reste une choses : le code blade des vues
+
+## 5. Structure des Vues
+
+```
+resources/views/
+├── layouts/
+│   ├── app.blade.php              # Layout principal
+│   ├── guest.blade.php            # Layout pour visiteurs
+│   └── partials/
+│       ├── header.blade.php
+│       ├── sidebar.blade.php
+│       ├── footer.blade.php
+│       └── notifications-dropdown.blade.php
+│
+├── auth/
+│   ├── login.blade.php
+│   ├── register.blade.php
+│   ├── forgot-password.blade.php
+│   └── reset-password.blade.php
+│
+├── welcome.blade.php              # Page d'accueil
+│
+├── dashboard/
+│   └── index.blade.php            # Tableau de bord
+│
+├── assessment/
+│   ├── initial/
+│   │   ├── start.blade.php        # Bienvenue évaluation
+│   │   ├── profile.blade.php      # Étape profil
+│   │   ├── knowledge.blade.php    # Étape test connaissances
+│   │   ├── preferences.blade.php  # Étape préférences
+│   │   └── complete.blade.php     # Résultat évaluation
+│   ├── start.blade.php            # Démarrer un contrôle
+│   └── result.blade.php           # Résultat d'un contrôle
+│
+├── learning/
+│   ├── level/
+│   │   ├── index.blade.php        # Liste des niveaux
+│   │   └── show.blade.php         # Détail d'un niveau
+│   ├── chapter/
+│   │   ├── index.blade.php        # Liste des chapitres
+│   │   └── show.blade.php         # Détail d'un chapitre
+│   └── lesson/
+│       ├── show.blade.php         # Affichage d'une leçon
+│       └── partials/
+│           ├── content.blade.php
+│           ├── math-demo.blade.php
+│           ├── mini-quiz.blade.php
+│           └── ai-chat.blade.php
+│
+├── progress/
+│   ├── index.blade.php            # Vue progression globale
+│   ├── history.blade.php          # Historique des leçons
+│   ├── assessments.blade.php      # Historique des évaluations
+│   └── achievements.blade.php     # Récompenses
+│
+├── profile/
+│   ├── show.blade.php             # Voir profil
+│   ├── edit.blade.php             # Modifier profil
+│   └── preferences.blade.php      # Préférences
+│
+├── ai/
+│   └── history.blade.php          # Historique conversations IA
+│
+├── notifications/
+│   └── index.blade.php            # Liste des notifications
+│
+└── components/
+    ├── progress-bar.blade.php
+    ├── achievement-badge.blade.php
+    ├── lesson-card.blade.php
+    ├── chapter-card.blade.php
+    ├── quiz-question.blade.php
+    └── ai-message.blade.php
+```
+
+---
+
+
+## 7. Résumé des Accès de Test
+
+Après avoir exécuté les seeders avec `php artisan db:seed`, vous pouvez tester avec :
+
+| Utilisateur | Email | Mot de passe | Niveau | Progression |
+|-------------|-------|--------------|--------|-------------|
+| Jean-Pierre Mukendi | jeanpierre@example.com | password123 | 4ème Secondaire | 3 leçons complétées, avancé |
+| Marie Kabongo | marie@example.com | password123 | 3ème Secondaire | 1 leçon complétée, débutante |
+
+Ces données de test couvrent tous les aspects du système : progression, évaluations, conversations IA, récompenses et notifications.
+
+
+Idees :
+-coder d'abord les morceau de code fournie,
+-donner les codes a l'ia et lui demander de faire une correspondance
+entre chaque controlleur et sa vue en partant de la strucure des vuess.
+Puis lui demander le code correspondant a chaque vue.
