@@ -44,7 +44,7 @@
                 <!-- Profil utilisateur -->
                 <div class="relative" x-data="{ open: false }">
                     <button @click="open = !open" class="flex items-center space-x-3 focus:outline-none group">
-                        <div class="w-9 h-9 rounded-full bg-gradient-to-r from-brand to-cyan-400 flex items-center justify-center font-semibold text-white">
+                        <div class="w-9 h-9 rounded-full bg-linear-to-r from-brand to-cyan-400 flex items-center justify-center font-semibold text-white">
                             {{ Auth::check() ? substr(Auth::user()->name, 0, 1) : 'A' }}
                         </div>
                         <div class="hidden md:block text-left">

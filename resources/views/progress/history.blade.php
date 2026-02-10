@@ -157,17 +157,17 @@
 
     <!-- Résumé -->
     <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-6 text-white">
+        <div class="bg-linear-to-r from-indigo-500 to-purple-600 rounded-xl p-6 text-white">
             <div class="text-3xl font-bold mb-2">{{ $lessonHistory->where('status', 'completed')->count() }}</div>
             <div class="text-sm text-indigo-100">Leçons terminées</div>
         </div>
         
-        <div class="bg-gradient-to-r from-blue-500 to-cyan-600 rounded-xl p-6 text-white">
+        <div class="bg-linear-to-r from-blue-500 to-cyan-600 rounded-xl p-6 text-white">
             <div class="text-3xl font-bold mb-2">{{ $lessonHistory->where('status', 'in_progress')->count() }}</div>
             <div class="text-sm text-blue-100">Leçons en cours</div>
         </div>
         
-        <div class="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-6 text-white">
+        <div class="bg-linear-to-r from-green-500 to-emerald-600 rounded-xl p-6 text-white">
             <div class="text-3xl font-bold mb-2">{{ $lessonHistory->sum('access_count') }}</div>
             <div class="text-sm text-green-100">Total des accès</div>
         </div>

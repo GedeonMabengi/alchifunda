@@ -86,7 +86,7 @@
     @foreach($lessons->groupBy('chapter.title') as $chapterTitle => $chapterLessons)
         <div class="glass rounded-2xl overflow-hidden">
             {{-- En-tête du chapitre --}}
-            <div class="bg-gradient-to-r from-brand/30 to-brand/10 border-b border-white/10 p-6">
+            <div class="bg-linear-to-r from-brand/30 to-brand/10 border-b border-white/10 p-6">
                 <div class="flex justify-between items-center">
                     <div>
                         <h2 class="text-xl font-bold text-white">{{ $chapterTitle }}</h2>
@@ -119,7 +119,7 @@
                             <div class="flex-1">
                                 <div class="flex items-start gap-4">
                                     {{-- Numéro de la leçon avec style --}}
-                                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-r from-brand to-cyan-400 flex items-center justify-center text-white font-bold">
+                                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-linear-to-r from-brand to-cyan-400 flex items-center justify-center text-white font-bold">
                                         {{ $lesson->order }}
                                     </div>
                                     

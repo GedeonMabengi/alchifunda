@@ -9,8 +9,8 @@
     <div class="group {{ $compact ? 'p-4' : 'p-6' }} bg-gray-900 border {{ $earned ? 'border-amber-500/30' : 'border-gray-800' }} rounded-2xl hover:border-amber-500/50 transition-all">
         <div class="flex items-start gap-4">
             {{-- Icône --}}
-            <div class="flex-shrink-0">
-                <div class="{{ $compact ? 'w-12 h-12' : 'w-16 h-16' }} rounded-full {{ $earned ? 'bg-gradient-to-r from-amber-500 to-yellow-500' : 'bg-gray-800' }} flex items-center justify-center">
+            <div class="shrink-0">
+                <div class="{{ $compact ? 'w-12 h-12' : 'w-16 h-16' }} rounded-full {{ $earned ? 'bg-linear-to-r from-amber-500 to-yellow-500' : 'bg-gray-800' }} flex items-center justify-center">
                     <svg class="{{ $compact ? 'w-6 h-6' : 'w-8 h-8' }} {{ $earned ? 'text-white' : 'text-gray-600' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
                     </svg>

@@ -2,7 +2,7 @@
     <div class="max-w-7xl mx-auto px-8 py-8">
         <div class="grid md:grid-cols-4 gap-8">
             <div>
-                <div class="text-xl font-bold bg-gradient-to-r from-brand to-cyan-400 bg-clip-text text-transparent mb-4">
+                <div class="text-xl font-bold bg-linear-to-r from-brand to-cyan-400 bg-clip-text text-transparent mb-4">
                     ALCHIFUNDA
                 </div>
                 <p class="text-sm text-gray-400">

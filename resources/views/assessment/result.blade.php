@@ -186,7 +186,7 @@
     @endif
 
     <!-- Recommandations -->
-    <div class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-8 text-white mb-8">
+    <div class="bg-linear-to-r from-blue-500 to-indigo-600 rounded-xl p-8 text-white mb-8">
         <h2 class="text-2xl font-bold mb-4">🎯 Recommandations</h2>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

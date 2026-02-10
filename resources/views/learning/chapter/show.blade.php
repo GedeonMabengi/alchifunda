@@ -21,7 +21,7 @@
     </nav>
 
     {{-- En-tête du chapitre --}}
-    <div class="bg-gradient-to-r from-brand/20 to-cyan-400/20 border border-brand/30 rounded-2xl p-8">
+    <div class="bg-linear-to-r from-brand/20 to-cyan-400/20 border border-brand/30 rounded-2xl p-8">
         <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-8">
             <div class="flex-1">
                 <div class="flex items-center gap-3 mb-4">
@@ -59,7 +59,7 @@
                             <span class="text-lg font-bold text-white">{{ $progressPercentage }}%</span>
                         </div>
                         <div class="w-full h-3 bg-gray-800 rounded-full overflow-hidden">
-                            <div class="h-full bg-gradient-to-r from-brand to-cyan-400 transition-all duration-1000" 
+                            <div class="h-full bg-linear-to-r from-brand to-cyan-400 transition-all duration-1000" 
                                  style="width: {{ $progressPercentage }}%"></div>
                         </div>
                     </div>
@@ -146,7 +146,7 @@
 
     {{-- Liste des leçons --}}
     <div class="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
-        <div class="bg-gradient-to-r from-brand/20 to-cyan-400/20 border-b border-gray-800 p-6">
+        <div class="bg-linear-to-r from-brand/20 to-cyan-400/20 border-b border-gray-800 p-6">
             <div class="flex items-center justify-between">
                 <div>
                     <h2 class="text-2xl font-bold text-white">📚 Leçons du chapitre</h2>
@@ -167,7 +167,7 @@
                     <div class="flex items-start justify-between">
                         <div class="flex items-start gap-4">
                             {{-- Statut de la leçon --}}
-                            <div class="flex-shrink-0">
+                            <div class="shrink-0">
                                 @if($lesson->user_status == 'completed')
                                     <div class="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
                                         <svg class="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -242,7 +242,7 @@
                     @if($lesson->user_status == 'in_progress')
                         <div class="mt-4 ml-14">
                             <div class="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
-                                <div class="h-full bg-gradient-to-r from-brand to-cyan-400" 
+                                <div class="h-full bg-linear-to-r from-brand to-cyan-400" 
                                      style="width: {{ $lesson->user_progress }}%"></div>
                             </div>
                         </div>
@@ -267,7 +267,7 @@
         <div class="grid md:grid-cols-2 gap-6">
             @if($chapter->learning_objectives)
                 <div class="bg-gray-900 border border-cyan-500/30 rounded-2xl overflow-hidden">
-                    <div class="bg-gradient-to-r from-cyan-500/20 to-cyan-600/20 border-b border-cyan-500/30 p-6">
+                    <div class="bg-linear-to-r from-cyan-500/20 to-cyan-600/20 border-b border-cyan-500/30 p-6">
                         <div class="flex items-center gap-2">
                             <div class="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center">
                                 <svg class="w-4 h-4 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -283,7 +283,7 @@
                                 <ul class="space-y-2">
                                     @foreach($chapter->learning_objectives as $objective)
                                         <li class="flex items-start gap-2">
-                                            <svg class="w-4 h-4 text-cyan-400 mt-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <svg class="w-4 h-4 text-cyan-400 mt-1 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                             </svg>
                                             <span class="text-gray-300">{{ $objective }}</span>
@@ -300,7 +300,7 @@
 
             @if($chapter->prerequisites)
                 <div class="bg-gray-900 border border-brand/30 rounded-2xl overflow-hidden">
-                    <div class="bg-gradient-to-r from-brand/20 to-blue-500/20 border-b border-brand/30 p-6">
+                    <div class="bg-linear-to-r from-brand/20 to-blue-500/20 border-b border-brand/30 p-6">
                         <div class="flex items-center gap-2">
                             <div class="w-8 h-8 rounded-full bg-brand/20 flex items-center justify-center">
                                 <svg class="w-4 h-4 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -316,7 +316,7 @@
                                 <ul class="space-y-2">
                                     @foreach($chapter->prerequisites as $prerequisite)
                                         <li class="flex items-start gap-2">
-                                            <svg class="w-4 h-4 text-brand mt-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <svg class="w-4 h-4 text-brand mt-1 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                             </svg>
                                             <span class="text-gray-300">{{ $prerequisite }}</span>
@@ -335,7 +335,7 @@
 
     {{-- CTA pour commencer --}}
     @if($chapter->lessons->count() > 0)
-        <div class="bg-gradient-to-r from-brand/20 to-emerald-500/20 border border-brand/30 rounded-2xl p-8 text-center">
+        <div class="bg-linear-to-r from-brand/20 to-emerald-500/20 border border-brand/30 rounded-2xl p-8 text-center">
             <h3 class="text-2xl font-bold text-white mb-4">Prêt à commencer ce chapitre ?</h3>
             <p class="text-gray-300 mb-6">
                 Commencez par la première leçon pour progresser dans votre apprentissage de la chimie.
@@ -344,7 +344,7 @@
                 $firstLesson = $chapter->lessons->sortBy('order')->first();
             @endphp
             <a href="{{ route('lesson.show', ['chapterSlug' => $chapter->slug, 'lessonSlug' => $firstLesson->slug]) }}" 
-               class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-brand to-cyan-500 text-white font-bold rounded-full hover:scale-105 transition-transform pulse-glow">
+               class="inline-flex items-center gap-2 px-8 py-4 bg-linear-to-r from-brand to-cyan-500 text-white font-bold rounded-full hover:scale-105 transition-transform pulse-glow">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>

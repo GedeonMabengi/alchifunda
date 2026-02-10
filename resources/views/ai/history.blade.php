@@ -9,7 +9,7 @@
 @section('content')
 <div class="space-y-8">
     <!-- En-tête avec statistiques -->
-    <div class="bg-gradient-to-r from-brand/20 to-cyan-400/20 border border-brand/30 rounded-2xl p-8">
+    <div class="bg-linear-to-r from-brand/20 to-cyan-400/20 border border-brand/30 rounded-2xl p-8">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
                 <h1 class="text-3xl md:text-4xl font-bold text-white mb-2">Assistant Chimie IA</h1>
@@ -55,7 +55,7 @@
             <!-- Interface de chat -->
             <div class="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden flex flex-col shadow-2xl" style="height: 650px;">
                 <!-- En-tête du chat -->
-                <div class="bg-gradient-to-r from-brand to-cyan-500 p-6">
+                <div class="bg-linear-to-r from-brand to-cyan-500 p-6">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
                             <div class="relative">
@@ -84,7 +84,7 @@
                         <!-- Afficher une conversation existante -->
                         <div class="flex items-start justify-end animate-fade-in">
                             <div class="flex-1 max-w-3xl">
-                                <div class="bg-gradient-to-r from-brand to-cyan-500 text-white rounded-2xl p-4">
+                                <div class="bg-linear-to-r from-brand to-cyan-500 text-white rounded-2xl p-4">
                                     <p class="font-medium">{{ $conversation->user_message }}</p>
                                 </div>
                                 <div class="text-xs text-gray-500 mt-1 text-right">
@@ -92,7 +92,7 @@
                                 </div>
                             </div>
                             <div class="flex-shrink-0 ml-3">
-                                <div class="w-8 h-8 rounded-full bg-gradient-to-r from-cyan-400 to-emerald-500 flex items-center justify-center">
+                                <div class="w-8 h-8 rounded-full bg-linear-to-r from-cyan-400 to-emerald-500 flex items-center justify-center">
                                     <span class="text-xs font-bold text-white">VO</span>
                                 </div>
                             </div>
@@ -100,7 +100,7 @@
 
                         <div class="flex items-start animate-fade-in">
                             <div class="flex-shrink-0 mr-3">
-                                <div class="w-8 h-8 rounded-full bg-gradient-to-r from-brand to-cyan-400 flex items-center justify-center">
+                                <div class="w-8 h-8 rounded-full bg-linear-to-r from-brand to-cyan-400 flex items-center justify-center">
                                     <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
                                     </svg>
@@ -121,7 +121,7 @@
                         <!-- Message de bienvenue -->
                         <div class="flex items-start animate-fade-in">
                             <div class="flex-shrink-0 mr-3">
-                                <div class="w-8 h-8 rounded-full bg-gradient-to-r from-brand to-cyan-400 flex items-center justify-center">
+                                <div class="w-8 h-8 rounded-full bg-linear-to-r from-brand to-cyan-400 flex items-center justify-center">
                                     <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                     </svg>
@@ -196,7 +196,7 @@
                             <button 
                                 type="submit" 
                                 id="send-btn"
-                                class="px-4 py-2 bg-gradient-to-r from-brand to-cyan-500 text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                class="px-4 py-2 bg-linear-to-r from-brand to-cyan-500 text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <span>Envoyer</span>
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -217,7 +217,7 @@
         <div class="space-y-6">
             <!-- Historique récent -->
             <div class="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
-                <div class="bg-gradient-to-r from-brand/20 to-brand/10 border-b border-gray-800 p-4">
+                <div class="bg-linear-to-r from-brand/20 to-brand/10 border-b border-gray-800 p-4">
                     <div class="flex items-center justify-between">
                         <h3 class="text-base font-bold text-white">📚 Historique récent</h3>
                         <span class="text-xs text-gray-400">{{ $conversations->count() }} conversations</span>
@@ -232,7 +232,7 @@
                                    class="block p-3 hover:bg-gray-800/50 transition {{ isset($conversation) && $conversation->id == $conv->id ? 'bg-brand/10 border-l-2 border-brand' : '' }}">
                                     <div class="flex items-start gap-3">
                                         <div class="flex-shrink-0">
-                                            <div class="w-8 h-8 rounded-full bg-gradient-to-r from-brand/20 to-cyan-400/20 flex items-center justify-center">
+                                            <div class="w-8 h-8 rounded-full bg-linear-to-r from-brand/20 to-cyan-400/20 flex items-center justify-center">
                                                 @if($conv->context == 'lesson_help')
                                                     <svg class="w-4 h-4 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
@@ -308,7 +308,7 @@
             </div>
 
             <!-- Informations IA -->
-            <div class="bg-gradient-to-r from-brand/10 to-cyan-400/10 border border-brand/20 rounded-2xl p-4">
+            <div class="bg-linear-to-r from-brand/10 to-cyan-400/10 border border-brand/20 rounded-2xl p-4">
                 <h4 class="text-base font-bold text-white mb-2">ℹ️ À propos</h4>
                 <ul class="space-y-2 text-xs text-gray-300">
                     <li class="flex items-center gap-2">
@@ -358,13 +358,13 @@
         const userHtml = `
             <div class="flex items-start justify-end animate-fade-in">
                 <div class="flex-1 max-w-3xl">
-                    <div class="bg-gradient-to-r from-brand to-cyan-500 text-white rounded-2xl p-3">
+                    <div class="bg-linear-to-r from-brand to-cyan-500 text-white rounded-2xl p-3">
                         <p class="text-sm font-medium">${escapeHtml(message)}</p>
                     </div>
                     <div class="text-xs text-gray-500 mt-1 text-right">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
                 </div>
                 <div class="flex-shrink-0 ml-2">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-r from-cyan-400 to-emerald-500 flex items-center justify-center">
+                    <div class="w-8 h-8 rounded-full bg-linear-to-r from-cyan-400 to-emerald-500 flex items-center justify-center">
                         <span class="text-xs font-bold text-white">VO</span>
                     </div>
                 </div>
@@ -413,7 +413,7 @@
                 const aiHtml = `
                     <div class="flex items-start animate-fade-in">
                         <div class="flex-shrink-0 mr-2">
-                            <div class="w-8 h-8 rounded-full bg-gradient-to-r from-brand to-cyan-400 flex items-center justify-center">
+                            <div class="w-8 h-8 rounded-full bg-linear-to-r from-brand to-cyan-400 flex items-center justify-center">
                                 <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
                                 </svg>

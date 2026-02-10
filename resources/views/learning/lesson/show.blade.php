@@ -55,7 +55,7 @@
                     <p class="text-sm text-gray-400">Progression</p>
                     <div class="flex items-center gap-2">
                         <div class="w-32 h-2 bg-gray-800 rounded-full overflow-hidden">
-                            <div class="h-full bg-gradient-to-r from-brand to-cyan-400" 
+                            <div class="h-full bg-linear-to-r from-brand to-cyan-400" 
                                  style="width: {{ $progress->progress_percentage }}%"></div>
                         </div>
                         <span class="text-sm font-bold text-white">{{ $progress->progress_percentage }}%</span>
@@ -101,7 +101,7 @@
             {{-- Démonstrations mathématiques --}}
             @if($lesson->math_demonstrations && is_array($lesson->math_demonstrations) && count($lesson->math_demonstrations) > 0)
                 <div class="bg-gray-900 border border-blue-500/30 rounded-2xl overflow-hidden">
-                    <div class="bg-gradient-to-r from-blue-500/20 to-blue-600/20 border-b border-blue-500/30 p-6">
+                    <div class="bg-linear-to-r from-blue-500/20 to-blue-600/20 border-b border-blue-500/30 p-6">
                         <div class="flex items-center gap-2">
                             <div class="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
                                 <svg class="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -133,7 +133,7 @@
             {{-- Exemples pratiques --}}
             @if($lesson->practical_examples && is_array($lesson->practical_examples) && count($lesson->practical_examples) > 0)
                 <div class="bg-gray-900 border border-emerald-500/30 rounded-2xl overflow-hidden">
-                    <div class="bg-gradient-to-r from-emerald-500/20 to-emerald-600/20 border-b border-emerald-500/30 p-6">
+                    <div class="bg-linear-to-r from-emerald-500/20 to-emerald-600/20 border-b border-emerald-500/30 p-6">
                         <div class="flex items-center gap-2">
                             <div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
                                 <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -163,7 +163,7 @@
             {{-- Mini-quiz intégré --}}
             @if($miniQuiz && $miniQuiz->questions->count() > 0)
                 <div class="bg-gray-900 border border-yellow-500/30 rounded-2xl overflow-hidden" id="mini-quiz">
-                    <div class="bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 border-b border-yellow-500/30 p-6">
+                    <div class="bg-linear-to-r from-yellow-500/20 to-yellow-600/20 border-b border-yellow-500/30 p-6">
                         <div class="flex items-center gap-2">
                             <div class="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center">
                                 <svg class="w-4 h-4 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -218,7 +218,7 @@
                             
                             <div class="flex justify-center">
                                 <button type="button" onclick="checkMiniQuiz()" 
-                                        class="px-8 py-3 bg-gradient-to-r from-yellow-500 to-amber-500 text-white font-bold rounded-lg hover:opacity-90 transition-opacity">
+                                        class="px-8 py-3 bg-linear-to-r from-yellow-500 to-amber-500 text-white font-bold rounded-lg hover:opacity-90 transition-opacity">
                                     Vérifier mes réponses
                                 </button>
                             </div>
@@ -230,7 +230,7 @@
             {{-- Résumé --}}
             @if($lesson->summary)
                 <div class="bg-gray-900 border border-cyan-500/30 rounded-2xl overflow-hidden">
-                    <div class="bg-gradient-to-r from-cyan-500/20 to-cyan-600/20 border-b border-cyan-500/30 p-6">
+                    <div class="bg-linear-to-r from-cyan-500/20 to-cyan-600/20 border-b border-cyan-500/30 p-6">
                         <div class="flex items-center gap-2">
                             <div class="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center">
                                 <svg class="w-4 h-4 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -292,7 +292,7 @@
                 <form action="{{ route('lesson.complete', $lesson->id) }}" method="POST" class="text-center">
                     @csrf
                     <button type="submit" 
-                            class="px-8 py-4 bg-gradient-to-r from-emerald-500 to-green-500 text-white font-bold rounded-full hover:scale-105 transition-transform pulse-glow">
+                            class="px-8 py-4 bg-linear-to-r from-emerald-500 to-green-500 text-white font-bold rounded-full hover:scale-105 transition-transform pulse-glow">
                         <div class="flex items-center justify-center gap-2">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
@@ -329,9 +329,9 @@
         <div class="space-y-6">
             {{-- Chat IA --}}
             <div class="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden sticky top-6">
-                <div class="bg-gradient-to-r from-brand/20 to-cyan-400/20 border-b border-gray-800 p-6">
+                <div class="bg-linear-to-r from-brand/20 to-cyan-400/20 border-b border-gray-800 p-6">
                     <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-full bg-gradient-to-r from-brand to-cyan-400 flex items-center justify-center">
+                        <div class="w-8 h-8 rounded-full bg-linear-to-r from-brand to-cyan-400 flex items-center justify-center">
                             <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
                             </svg>

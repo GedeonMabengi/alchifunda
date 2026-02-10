@@ -2,7 +2,7 @@
     <!-- Logo avec effet spécial -->
     <div class="flex items-center justify-center h-20 flex-shrink-0 px-4 border-b border-white/10">
         <a href="{{ route('dashboard') }}" class="relative group">
-            <div class="text-2xl font-bold bg-gradient-to-r from-brand to-cyan-400 bg-clip-text text-transparent">
+            <div class="text-2xl font-bold bg-linear-to-r from-brand to-cyan-400 bg-clip-text text-transparent">
                 ALCHIFUNDA
             </div>
             <div class="absolute -inset-1 bg-brand/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -102,7 +102,7 @@
             <div class="text-xs text-gray-500">
                 ALCHIFUNDA v1.0
             </div>
-            <div class="w-8 h-8 rounded-full bg-gradient-to-r from-brand to-cyan-400 flex items-center justify-center text-xs font-bold">
+            <div class="w-8 h-8 rounded-full bg-linear-to-r from-brand to-cyan-400 flex items-center justify-center text-xs font-bold">
                 {{ Auth::check() ? substr(Auth::user()->name, 0, 1) : 'A' }}
             </div>
         </div>

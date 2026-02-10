@@ -188,7 +188,7 @@
     <section class="max-w-4xl mx-auto px-8 py-20 text-center">
         <h2 class="text-4xl font-bold mb-6">Prêt à Maîtriser la Chimie ?</h2>
         <p class="text-gray-400 text-lg mb-10 max-w-2xl mx-auto">Rejoignez les premiers élèves à bénéficier de l'apprentissage adaptatif par IA spécifiquement conçu pour le programme de la RDC.</p>
-        <button class="bg-gradient-to-r from-brand to-secondary text-white px-10 py-4 rounded-full font-bold text-lg hover:scale-105 transition">Commencer Gratuitement</button>
+        <button class="bg-linear-to-r from-brand to-secondary text-white px-10 py-4 rounded-full font-bold text-lg hover:scale-105 transition">Commencer Gratuitement</button>
         <p class="text-gray-500 text-sm mt-6">Aucune carte de crédit requise • Évaluation gratuite du niveau</p>
     </section>
 

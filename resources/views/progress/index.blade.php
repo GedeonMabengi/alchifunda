@@ -107,7 +107,7 @@
                                 <span>{{ $progress['completed'] }}/{{ $progress['total'] }} ({{ $progress['percentage'] }}%)</span>
                             </div>
                             <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                                <div class="bg-gradient-to-r from-indigo-500 to-purple-600 h-3 rounded-full transition-all duration-500" 
+                                <div class="bg-linear-to-r from-indigo-500 to-purple-600 h-3 rounded-full transition-all duration-500" 
                                      style="width: {{ $progress['percentage'] }}%"></div>
                             </div>
                         </div>

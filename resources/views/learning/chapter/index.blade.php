@@ -8,7 +8,7 @@
 @section('content')
 <div class="space-y-8">
     {{-- Bannière d'en-tête --}}
-    <div class="bg-gradient-to-r from-brand/20 to-cyan-400/20 border border-brand/30 rounded-2xl p-8">
+    <div class="bg-linear-to-r from-brand/20 to-cyan-400/20 border border-brand/30 rounded-2xl p-8">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
                 <h1 class="text-3xl md:text-4xl font-bold text-white mb-2">Chapitres de Chimie</h1>
@@ -86,7 +86,7 @@
                 <a href="{{ route('chapter.show', $chapter->slug) }}" 
                    class="group bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden hover:border-brand transition-all">
                     {{-- En-tête du chapitre --}}
-                    <div class="relative p-6 bg-gradient-to-r from-brand/10 to-cyan-400/10 border-b border-gray-800">
+                    <div class="relative p-6 bg-linear-to-r from-brand/10 to-cyan-400/10 border-b border-gray-800">
                         <div class="flex items-start justify-between">
                             <div>
                                 <span class="inline-block px-3 py-1 rounded-full bg-black/30 text-xs font-medium text-brand mb-2">
@@ -99,7 +99,7 @@
                                     {{ $chapter->subtitle ?? 'Chapitre de chimie' }}
                                 </p>
                             </div>
-                            <div class="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-r from-brand to-cyan-400 flex items-center justify-center text-white font-bold text-lg">
+                            <div class="shrink-0 w-12 h-12 rounded-full bg-linear-to-r from-brand to-cyan-400 flex items-center justify-center text-white font-bold text-lg">
                                 {{ $chapter->order }}
                             </div>
                         </div>
@@ -114,7 +114,7 @@
                                 <span class="text-sm font-bold text-white">{{ $chapter->progress_percentage }}%</span>
                             </div>
                             <div class="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
-                                <div class="h-full bg-gradient-to-r from-brand to-cyan-400 transition-all duration-500" 
+                                <div class="h-full bg-linear-to-r from-brand to-cyan-400 transition-all duration-500" 
                                      style="width: {{ $chapter->progress_percentage }}%"></div>
                             </div>
                             <div class="flex items-center justify-between mt-2 text-xs text-gray-500">

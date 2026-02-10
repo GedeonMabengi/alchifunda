@@ -57,7 +57,7 @@
 
 /* Animation pour le chargement */
 .loading-pulse {
-    @apply animate-pulse bg-gradient-to-r  to-cyan-400/20;
+    @apply animate-pulse bg-linear-to-r  to-cyan-400/20;
 }
 
 /* Typographie */
@@ -75,9 +75,9 @@
 
 /* Utilitaires */
 .text-gradient {
-    @apply bg-gradient-to-r  to-cyan-400 bg-clip-text text-transparent;
+    @apply bg-linear-to-r  to-cyan-400 bg-clip-text text-transparent;
 }
 
 .bg-gradient-brand {
-    @apply bg-gradient-to-r  to-cyan-400;
+    @apply bg-linear-to-r  to-cyan-400;
 }

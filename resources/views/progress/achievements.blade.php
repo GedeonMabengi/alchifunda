@@ -8,7 +8,7 @@
 @section('content')
 <div class="space-y-8">
     {{-- Bannière d'en-tête avec statistiques --}}
-    <div class="bg-gradient-to-r from-brand/20 to-amber-500/20 border border-brand/30 rounded-2xl p-8">
+    <div class="bg-linear-to-r from-brand/20 to-amber-500/20 border border-brand/30 rounded-2xl p-8">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
                 <h1 class="text-3xl md:text-4xl font-bold text-white mb-2">🏆 Mes Récompenses</h1>
@@ -61,7 +61,7 @@
                 <span class="text-sm font-bold text-white">{{ $completionRate }}%</span>
             </div>
             <div class="w-full h-3 bg-gray-800 rounded-full overflow-hidden">
-                <div class="h-full bg-gradient-to-r from-amber-500 to-yellow-500 transition-all duration-1000" 
+                <div class="h-full bg-linear-to-r from-amber-500 to-yellow-500 transition-all duration-1000" 
                      style="width: {{ $completionRate }}%"></div>
             </div>
             <div class="flex items-center justify-between mt-2 text-sm text-gray-400">
@@ -86,11 +86,11 @@
         @if($earnedAchievements->count() > 0)
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach($earnedAchievements as $achievement)
-                    <div class="group bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700 rounded-2xl overflow-hidden hover:border-amber-500/50 transition-all">
+                    <div class="group bg-linear-to-br from-gray-900 to-gray-800 border border-gray-700 rounded-2xl overflow-hidden hover:border-amber-500/50 transition-all">
                         {{-- En-tête de la récompense --}}
                         <div class="relative p-6">
                             {{-- Effet de lumière --}}
-                            <div class="absolute inset-0 bg-gradient-to-r from-amber-500/10 to-yellow-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <div class="absolute inset-0 bg-linear-to-r from-amber-500/10 to-yellow-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                             
                             <div class="relative flex items-start justify-between">
                                 <div>
@@ -122,8 +122,8 @@
                                     <p class="text-gray-300 text-sm">{{ $achievement->description }}</p>
                                 </div>
                                 
-                                <div class="flex-shrink-0">
-                                    <div class="w-16 h-16 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 flex items-center justify-center">
+                                <div class="shrink-0">
+                                    <div class="w-16 h-16 rounded-full bg-linear-to-r from-amber-500 to-yellow-500 flex items-center justify-center">
                                         <svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
                                         </svg>
@@ -212,7 +212,7 @@
                 @foreach($lockedAchievements as $achievement)
                     <div class="group bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden hover:border-gray-700 transition-all">
                         {{-- En-tête de la récompense --}}
-                        <div class="relative p-6 bg-gradient-to-br from-gray-900 to-gray-800">
+                        <div class="relative p-6 bg-linear-to-br from-gray-900 to-gray-800">
                             <div class="relative flex items-start justify-between">
                                 <div>
                                     <div class="inline-flex items-center gap-2 mb-3">
@@ -243,7 +243,7 @@
                                     <p class="text-gray-500 text-sm">{{ $achievement->description }}</p>
                                 </div>
                                 
-                                <div class="flex-shrink-0">
+                                <div class="shrink-0">
                                     <div class="w-16 h-16 rounded-full bg-gray-800 flex items-center justify-center">
                                         <svg class="w-8 h-8 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
@@ -294,8 +294,8 @@
             </div>
         @else
             {{-- Toutes les récompenses sont débloquées --}}
-            <div class="bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/30 rounded-2xl p-12 text-center">
-                <div class="w-16 h-16 mx-auto rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 flex items-center justify-center mb-4">
+            <div class="bg-linear-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/30 rounded-2xl p-12 text-center">
+                <div class="w-16 h-16 mx-auto rounded-full bg-linear-to-r from-amber-500 to-yellow-500 flex items-center justify-center mb-4">
                     <svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                     </svg>
@@ -336,7 +336,7 @@
                 
                 <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
                     <div class="flex items-center gap-3 mb-3">
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-r {{ $category['color'] }} flex items-center justify-center">
+                        <div class="w-10 h-10 rounded-full bg-linear-to-r {{ $category['color'] }} flex items-center justify-center">
                             <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $category['icon'] }}"/>
                             </svg>
@@ -348,7 +348,7 @@
                     </div>
                     
                     <div class="w-full h-2 bg-gray-700 rounded-full overflow-hidden mb-2">
-                        <div class="h-full bg-gradient-to-r {{ $category['color'] }}" style="width: {{ $percentage }}%"></div>
+                        <div class="h-full bg-linear-to-r {{ $category['color'] }}" style="width: {{ $percentage }}%"></div>
                     </div>
                     
                     <div class="text-right">
@@ -361,7 +361,7 @@
 
     {{-- Prochaines récompenses à débloquer --}}
     @if($lockedAchievements->count() > 0)
-        <div class="bg-gradient-to-r from-brand/10 to-cyan-400/10 border border-brand/20 rounded-2xl p-8">
+        <div class="bg-linear-to-r from-brand/10 to-cyan-400/10 border border-brand/20 rounded-2xl p-8">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
                     <h3 class="text-2xl font-bold text-white mb-2">🎯 Prochaines récompenses à débloquer</h3>
@@ -370,7 +370,7 @@
                     </p>
                 </div>
                 <a href="{{ route('level.index') }}" 
-                   class="px-6 py-3 bg-gradient-to-r from-brand to-cyan-500 text-white font-bold rounded-lg hover:opacity-90 transition-opacity">
+                       class="px-6 py-3 bg-linear-to-r from-brand to-cyan-500 text-white font-bold rounded-lg hover:opacity-90 transition-opacity">
                     Continuer à apprendre
                 </a>
             </div>
