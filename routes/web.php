@@ -204,6 +204,15 @@ Route::middleware('auth')->group(function () {
             Route::get('/history', [AIConversationController::class, 'history'])->name('history');
         });
 
+
+// routes/web.php
+Route::prefix('ai')->name('ai.')->middleware(['auth', 'assessment.completed'])->group(function () {
+    Route::get('/assistant', [AIConversationController::class, 'assistant'])->name('assistant');
+    Route::post('/ask', [AIConversationController::class, 'askGeneral'])->name('ask');
+    Route::get('/history', [AIConversationController::class, 'history'])->name('history');
+    Route::get('/conversation/{id}', [AIConversationController::class, 'showConversation'])->name('conversation.show');
+});
+
         /*
         |--------------------------------------------------------------------------
         | Notifications
@@ -229,3 +238,23 @@ Route::prefix('api')->middleware('auth')->group(function () {
     Route::post('/ai/ask', [AIConversationController::class, 'ask']);
     Route::get('/notifications/unread-count', [NotificationController::class, 'getUnreadCount']);
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AITestController;
+
+Route::get('/test-ai', [AITestController::class, 'index'])->name('ai.test');
+Route::post('/test-ai/ask', [AITestController::class, 'ask'])->name('ai.ask');
+Route::get('/test-ai/connection-test', [AITestController::class, 'testConnection'])->name('ai.connection');

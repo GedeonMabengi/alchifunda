@@ -143,4 +143,12 @@ class User extends Authenticatable
             // event(new UserLeveledUp($this, $nextLevel));
         }
     }
+
+    /**
+     * Relation : Un utilisateur a plusieurs conversations IA
+     */
+    public function aiConversations()
+    {
+        return $this->hasMany(AIConversation::class);
+    }
 }
