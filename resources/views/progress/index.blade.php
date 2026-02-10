@@ -186,11 +186,9 @@
                             @foreach($scoreHistory as $index => $result)
                                 <div class="flex-1 flex flex-col items-center mx-1">
                                     <div class="w-8 rounded-t-lg 
-                                        {{ $result->percentage >= 80 ? 'bg-green-500' : 
-                                           $result->percentage >= 60 ? 'bg-yellow-500' : 
-                                           'bg-red-500' }}" 
-                                         style="height: {{ $result->percentage }}%">
-                                    </div>
+    {{ $result->percentage >= 80 ? 'bg-green-500' : ($result->percentage >= 60 ? 'bg-yellow-500' : 'bg-red-500') }}" 
+     style="height: {{ $result->percentage }}%">
+</div>
                                     <div class="text-xs text-gray-600 dark:text-gray-400 mt-2">
                                         {{ $index + 1 }}
                                     </div>

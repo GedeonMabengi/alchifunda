@@ -151,4 +151,11 @@ class User extends Authenticatable
     {
         return $this->hasMany(AIConversation::class);
     }
+
+    public function achievements()
+{
+    return $this->belongsToMany(Achievement::class, 'user_achievements')
+        ->withPivot('earned_at')  // ✅ Bon nom selon ta migration
+        ->withTimestamps();
+}
 }

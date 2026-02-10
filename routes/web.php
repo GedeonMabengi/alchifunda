@@ -238,23 +238,3 @@ Route::prefix('api')->middleware('auth')->group(function () {
     Route::post('/ai/ask', [AIConversationController::class, 'ask']);
     Route::get('/notifications/unread-count', [NotificationController::class, 'getUnreadCount']);
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AITestController;
-
-Route::get('/test-ai', [AITestController::class, 'index'])->name('ai.test');
-Route::post('/test-ai/ask', [AITestController::class, 'ask'])->name('ai.ask');
-Route::get('/test-ai/connection-test', [AITestController::class, 'testConnection'])->name('ai.connection');
