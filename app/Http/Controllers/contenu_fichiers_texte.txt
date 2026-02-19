@@ -1,0 +1,3576 @@
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Http\Controllers\AI\AIConversationController.php ===
+<?php
+
+namespace App\Http\Controllers\AI;
+
+use App\Http\Controllers\Controller;
+use App\Models\AIConversation;
+use App\Services\OpenRouterService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
+
+class AIConversationController extends Controller
+{
+    protected OpenRouterService $aiService;
+
+    public function __construct(OpenRouterService $aiService)
+    {
+        $this->aiService = $aiService;
+    }
+
+    public function assistant(Request $request)
+    {
+        $user = Auth::user();
+
+        $conversations = AIConversation::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        $activeConversation = null;
+        if ($request->has('conversation')) {
+            $activeConversation = AIConversation::where('user_id', $user->id)
+                ->find($request->conversation);
+        }
+
+        return view('ai.history', compact('conversations', 'activeConversation'));
+    }
+
+    public function history(Request $request)
+    {
+        return redirect()->route('ai.assistant', $request->all());
+    }
+
+    public function showConversation($id)
+    {
+        return redirect()->route('ai.assistant', ['conversation' => $id]);
+    }
+
+    public function askGeneral(Request $request)
+    {
+        $user = Auth::user();
+        $startTime = microtime(true);
+
+        // ✅ Validation JSON-friendly
+        $validator = Validator::make($request->all(), [
+            'message' => 'nullable|string|max:4000',
+            'file' => 'nullable|file|max:20480', // 20MB
+            'context' => 'nullable|string|in:lesson_help,general_question,file_analysis',
+            'lesson_id' => 'nullable|integer',
+        ]);
+
+        if ($validator->fails()) {
+            Log::warning('AI askGeneral: validation failed', [
+                'user_id' => $user?->id,
+                'errors' => $validator->errors()->toArray(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $fileData = null;
+        $attachmentPath = null;
+        $attachmentFilename = null;
+        $attachmentMimeType = null;
+
+        try {
+            Log::info('AI askGeneral: request received', [
+                'user_id' => $user?->id,
+                'has_file' => $request->hasFile('file'),
+                'message_len' => strlen((string) $request->message),
+                'context' => $request->context,
+                'model' => env('OPENROUTER_MODEL', 'openrouter/free'),
+            ]);
+
+            // ✅ Fichier
+            if ($request->hasFile('file')) {
+                $file = $request->file('file');
+
+                $allowedMimes = [
+                    'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+                    'application/pdf',
+                    'audio/mpeg', 'audio/wav', 'audio/mp3', 'audio/ogg',
+                    'video/mp4', 'video/mpeg',
+                    'text/plain',
+                    'application/msword',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                ];
+
+                $mime = $file->getMimeType();
+                if (!in_array($mime, $allowedMimes)) {
+                    Log::warning('AI askGeneral: unsupported file type', [
+                        'user_id' => $user->id,
+                        'mime' => $mime,
+                        'filename' => $file->getClientOriginalName(),
+                    ]);
+
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Type de fichier non supporté. Utilisez: images, PDF, audio, vidéo, Word.',
+                    ], 422);
+                }
+
+                $attachmentPath = $file->store('ai_files/' . $user->id, 'private');
+                $attachmentFilename = $file->getClientOriginalName();
+                $attachmentMimeType = $mime;
+
+                $fileData = [
+                    'mime_type' => $attachmentMimeType,
+                    'data' => base64_encode(file_get_contents($file->getPathname())),
+                    'filename' => $attachmentFilename,
+                ];
+
+                Log::info('AI askGeneral: file prepared', [
+                    'user_id' => $user->id,
+                    'filename' => $attachmentFilename,
+                    'mime' => $attachmentMimeType,
+                    'size' => $file->getSize(),
+                    'stored_path' => $attachmentPath,
+                ]);
+            }
+
+            $context = $request->context ?? ($fileData ? 'file_analysis' : 'general_question');
+
+            $message = trim((string) $request->message);
+            if ($message === '' && $fileData) {
+                $message = 'Analyse ce document et explique-moi ce que tu vois.';
+            }
+            if ($message === '' && !$fileData) {
+                $message = 'Bonjour, peux-tu m’aider en chimie ?';
+            }
+
+            Log::info('AI askGeneral: calling OpenRouter', [
+                'user_id' => $user->id,
+                'context' => $context,
+                'has_attachment' => (bool) $fileData,
+                'model' => env('OPENROUTER_MODEL', 'openrouter/free'),
+            ]);
+
+            $responseText = $this->aiService->analyzeMultimodal(
+                $message,
+                $fileData ? [$fileData] : [],
+                [
+                    'user_level' => $user->profile->declared_level_id ?? 'secondaire',
+                    'subject' => 'chimie',
+                ]
+            );
+
+            $conversation = AIConversation::create([
+                'user_id' => $user->id,
+                'lesson_id' => $request->lesson_id ?? null,
+                'context' => $context,
+                'user_message' => $message,
+                'ai_response' => $responseText,
+                'attachment_filename' => $attachmentFilename,
+                'attachment_mime_type' => $attachmentMimeType,
+                'attachment_path' => $attachmentPath,
+                'has_attachment' => !empty($fileData),
+                'metadata' => [
+                    'processing_time_ms' => round((microtime(true) - $startTime) * 1000),
+                    'provider' => 'openrouter',
+                    'model' => env('OPENROUTER_MODEL', 'openrouter/free'),
+                    'file_size' => $request->hasFile('file') ? $request->file('file')->getSize() : null,
+                ],
+            ]);
+
+            Log::info('AI askGeneral: success', [
+                'user_id' => $user->id,
+                'conversation_id' => $conversation->id,
+                'time_ms' => round((microtime(true) - $startTime) * 1000),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'response' => $responseText,
+                'conversation_id' => $conversation->id,
+                'processing_time' => round((microtime(true) - $startTime) * 1000),
+            ]);
+
+        } catch (\Throwable $e) {
+            Log::error('AI askGeneral: exception', [
+                'user_id' => $user?->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+}
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Http\Controllers\AI\AIConversationControllerx.php ===
+<?php
+// app/Http/Controllers/AI/AIConversationController.php
+
+namespace App\Http\Controllers\AI;
+
+use App\Http\Controllers\Controller;
+use App\Models\AIConversation;
+use App\Models\Lesson;
+use App\Services\AIService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class AIConversationControllerx extends Controller
+{
+    protected $aiService;
+
+    public function __construct(AIService $aiService)
+    {
+        $this->aiService = $aiService;
+    }
+
+    public function ask(Request $request)
+    {
+        $validated = $request->validate([
+            'message' => 'required|string|max:2000',
+            'lesson_id' => 'nullable|exists:lessons,id',
+            'context' => 'required|in:lesson_help,general_question,feedback',
+        ]);
+
+        $user = Auth::user();
+        $lesson = $validated['lesson_id'] ? Lesson::find($validated['lesson_id']) : null;
+
+        // Générer la réponse IA
+        $response = $this->aiService->generateResponse(
+            $validated['message'],
+            $validated['context'],
+            $lesson,
+            $user->preferences,
+            $this->getRecentConversations($user, $lesson)
+        );
+
+        // Sauvegarder la conversation
+        $conversation = AIConversation::create([
+            'user_id' => $user->id,
+            'lesson_id' => $lesson?->id,
+            'context' => $validated['context'],
+            'user_message' => $validated['message'],
+            'ai_response' => $response,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'response' => $response,
+            'conversation_id' => $conversation->id,
+        ]);
+    }
+
+    public function history(Request $request)
+    {
+        $user = Auth::user();
+
+        $query = AIConversation::where('user_id', $user->id)
+            ->with('lesson');
+
+        if ($request->has('lesson_id')) {
+            $query->where('lesson_id', $request->lesson_id);
+        }
+
+        if ($request->has('context')) {
+            $query->where('context', $request->context);
+        }
+
+        $conversations = $query->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        return view('ai.history', compact('conversations'));
+    }
+
+    private function getRecentConversations($user, $lesson = null)
+    {
+        $query = AIConversation::where('user_id', $user->id);
+
+        if ($lesson) {
+            $query->where('lesson_id', $lesson->id);
+        }
+
+        return $query->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+    }
+}
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Http\Controllers\AI\AIConversationControllery.php ===
+<?php
+
+namespace App\Http\Controllers\AI;
+
+use App\Http\Controllers\Controller;
+use App\Models\AIConversation;
+use App\Models\Lesson;
+use App\Services\AIService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+
+class AIConversationControllery extends Controller
+{
+    protected $aiService;
+
+    public function __construct(AIService $aiService)
+    {
+        $this->aiService = $aiService;
+    }
+
+    /**
+     * Page principale de l'assistant IA avec chat intégré
+     */
+    public function assistant(Request $request)
+    {
+        Log::info('=== AI ASSISTANT ACCÈS ===', [
+            'user_id' => Auth::id(),
+            'ip' => $request->ip(),
+            'timestamp' => now()->toIso8601String()
+        ]);
+
+        try {
+            $user = Auth::user();
+
+            // Vérifier si on charge une conversation spécifique
+            $conversationId = $request->get('conversation_id');
+            $conversation = null;
+
+            if ($conversationId) {
+                Log::info('Chargement conversation spécifique', ['conversation_id' => $conversationId]);
+                
+                $conversation = AIConversation::where('user_id', $user->id)
+                    ->with('lesson')
+                    ->find($conversationId);
+
+                if (!$conversation) {
+                    Log::warning('Conversation non trouvée', ['conversation_id' => $conversationId]);
+                } else {
+                    Log::info('Conversation chargée', [
+                        'conversation_id' => $conversation->id,
+                        'message_preview' => Str::limit($conversation->user_message, 50)
+                    ]);
+                }
+            }
+
+            // Récupérer les conversations récentes pour l'historique
+            $conversations = AIConversation::where('user_id', $user->id)
+                ->with('lesson')
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
+
+            Log::info('Conversations récupérées', ['count' => $conversations->count()]);
+
+            return view('ai.history', compact('conversations', 'conversation'));
+
+        } catch (\Exception $e) {
+            Log::error('Erreur assistant', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->with('error', 'Erreur lors du chargement de l\'assistant');
+        }
+    }
+
+    /**
+     * Méthode dédiée pour les questions générales (chat principal)
+     */
+    public function askGeneral(Request $request)
+    {
+        $startTime = microtime(true);
+        
+        Log::info('=== AI ASK GENERAL DÉMARRÉ ===', [
+            'user_id' => Auth::id(),
+            'ip' => $request->ip(),
+            'input' => $request->all()
+        ]);
+
+        // Validation
+        try {
+            $validated = $request->validate([
+                'message' => 'required|string|max:2000|min:2',
+                'context' => 'required|in:lesson_help,general_question,feedback',
+                'conversation_id' => 'nullable|integer',
+                'lesson_id' => 'nullable|exists:lessons,id',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::warning('Validation échouée', ['errors' => $e->errors()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Données invalides',
+                'errors' => $e->errors()
+            ], 422);
+        }
+
+        $user = Auth::user();
+
+        try {
+            // Vérifier le service AI
+            if (!$this->aiService) {
+                Log::error('Service AI non initialisé');
+                throw new \Exception('Service AI indisponible');
+            }
+
+            // Préparer le contexte pour l'IA
+            $context = $this->buildContext($user, $validated);
+
+            Log::info('Contexte construit', [
+                'user_level' => $context['user_level'] ?? null,
+                'has_lesson' => isset($context['lesson_title'])
+            ]);
+
+            // Appel à l'API DeepSeek avec timeout et retry
+            $response = $this->callAIWithRetry($validated['message'], $context);
+
+            if (!$response['success']) {
+                throw new \Exception($response['error'] ?? 'Erreur IA inconnue');
+            }
+
+            $aiResponse = $response['content'];
+
+            // Sauvegarder la conversation
+            $conversation = $this->saveConversation($user, $validated, $aiResponse);
+
+            $duration = round((microtime(true) - $startTime) * 1000, 2);
+
+            Log::info('=== AI ASK GENERAL SUCCÈS ===', [
+                'conversation_id' => $conversation->id,
+                'duration_ms' => $duration,
+                'response_length' => strlen($aiResponse)
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'response' => $aiResponse,
+                'conversation_id' => $conversation->id,
+                'created_at' => $conversation->created_at->toIso8601String(),
+                'processing_time' => $duration
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('=== AI ASK GENERAL ERREUR ===', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'duration_ms' => round((microtime(true) - $startTime) * 1000, 2)
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur: ' . $e->getMessage(),
+                'error_code' => 'AI_ERROR'
+            ], 500);
+        }
+    }
+
+    /**
+     * Afficher l'historique complet des conversations
+     */
+    public function history(Request $request)
+    {
+        Log::info('AI History accès', ['user_id' => Auth::id()]);
+        
+        // Rediriger vers assistant pour avoir le chat
+        return redirect()->route('ai.assistant', $request->query());
+    }
+
+    /**
+     * Afficher une conversation spécifique
+     */
+    public function showConversation($id)
+    {
+        Log::info('Show conversation', ['conversation_id' => $id, 'user_id' => Auth::id()]);
+        
+        return redirect()->route('ai.assistant', ['conversation_id' => $id]);
+    }
+
+    /**
+     * Construire le contexte pour l'IA
+     */
+    private function buildContext($user, array $validated): array
+    {
+        $context = [
+            'user_level' => $user->profile->assessedLevel?->name ?? 'Non déterminé',
+            'user_age' => $user->profile->age,
+            'preferences' => [
+                'tone' => $user->preferences->tone ?? 'friendly',
+                'detail_level' => $user->preferences->detail_level ?? 'moderate',
+            ],
+            'subject' => 'chimie',
+            'program' => 'RDC secondaire',
+            'language' => 'français'
+        ];
+
+        if (!empty($validated['lesson_id'])) {
+            try {
+                $lesson = Lesson::find($validated['lesson_id']);
+                if ($lesson) {
+                    $context['lesson_title'] = $lesson->title;
+                    $context['lesson_content'] = Str::limit($lesson->content, 1000);
+                    $context['chapter'] = $lesson->chapter?->title;
+                }
+            } catch (\Exception $e) {
+                Log::warning('Erreur chargement leçon pour contexte', ['error' => $e->getMessage()]);
+            }
+        }
+
+        return $context;
+    }
+
+    /**
+     * Appel à l'IA avec retry
+     */
+    private function callAIWithRetry(string $message, array $context, int $maxRetries = 2): array
+    {
+        $attempt = 0;
+        
+        while ($attempt < $maxRetries) {
+            $attempt++;
+            
+            try {
+                Log::info("Tentative AI #{$attempt}");
+                
+                $response = $this->aiService->ask($message, $context);
+                
+                if (empty($response) || $response === "Aucune réponse reçue de l'API") {
+                    throw new \Exception('Réponse vide de l\'IA');
+                }
+
+                // Vérifier si c'est une erreur
+                if (str_starts_with($response, 'Erreur') || str_starts_with($response, 'Désolé')) {
+                    throw new \Exception($response);
+                }
+
+                return [
+                    'success' => true,
+                    'content' => $response
+                ];
+
+            } catch (\Exception $e) {
+                Log::warning("Tentative AI #{$attempt} échouée", ['error' => $e->getMessage()]);
+                
+                if ($attempt >= $maxRetries) {
+                    return [
+                        'success' => false,
+                        'error' => $e->getMessage()
+                    ];
+                }
+                
+                // Attendre avant retry (backoff exponentiel)
+                usleep(500000 * $attempt); // 0.5s, 1s
+            }
+        }
+
+        return ['success' => false, 'error' => 'Max retries atteint'];
+    }
+
+    /**
+     * Sauvegarder la conversation en base
+     */
+    private function saveConversation($user, array $validated, string $response): AIConversation
+    {
+        try {
+            $conversation = AIConversation::create([
+                'user_id' => $user->id,
+                'lesson_id' => $validated['lesson_id'] ?? null,
+                'context' => $validated['context'],
+                'user_message' => $validated['message'],
+                'ai_response' => $response,
+                'metadata' => [
+                    'tokens_used' => $this->estimateTokens($validated['message'] . $response),
+                    'model' => 'deepseek-chat',
+                    'ip' => request()->ip(),
+                    'user_agent' => Str::limit(request()->userAgent(), 200),
+                ],
+            ]);
+
+            Log::info('Conversation sauvegardée', ['id' => $conversation->id]);
+            
+            return $conversation;
+
+        } catch (\Exception $e) {
+            Log::error('Erreur sauvegarde conversation', ['error' => $e->getMessage()]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Estimation des tokens
+     */
+    private function estimateTokens(string $text): int
+    {
+        // Approximation: ~4 caractères par token pour français
+        return (int) ceil(mb_strlen($text) / 4);
+    }
+
+    /**
+     * Méthode pour les questions depuis une leçon (API JSON)
+     */
+    public function askFromLesson(Request $request, $lessonId)
+    {
+        Log::info('Ask from lesson', ['lesson_id' => $lessonId, 'user_id' => Auth::id()]);
+
+        try {
+            $validated = $request->validate([
+                'question' => 'required|string|max:1000',
+            ]);
+
+            $user = Auth::user();
+            $lesson = Lesson::findOrFail($lessonId);
+
+            $context = [
+                'lesson_title' => $lesson->title,
+                'lesson_content' => Str::limit($lesson->content, 1000),
+                'user_level' => $user->profile->assessedLevel?->name,
+            ];
+
+            $response = $this->aiService->ask($validated['question'], $context);
+
+            $conversation = AIConversation::create([
+                'user_id' => $user->id,
+                'lesson_id' => $lesson->id,
+                'context' => 'lesson_help',
+                'user_message' => $validated['question'],
+                'ai_response' => $response,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'response' => $response,
+                'conversation_id' => $conversation->id,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur askFromLesson', [
+                'lesson_id' => $lessonId,
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+}
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Http\Controllers\Assessment\AssessmentController.php ===
+<?php
+// app/Http/Controllers/Assessment/AssessmentController.php
+
+namespace App\Http\Controllers\Assessment;
+
+use App\Http\Controllers\Controller;
+use App\Models\Assessment;
+use App\Models\Question;
+use App\Models\UserAssessmentResult;
+use App\Models\UserQuestionAnswer;
+use App\Models\UserLessonProgress;
+use App\Services\AIService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+
+class AssessmentController extends Controller
+{
+    protected $aiService;
+
+    public function __construct(AIService $aiService)
+    {
+        $this->aiService = $aiService;
+    }
+
+    public function start($assessmentId)
+    {
+        $assessment = Assessment::with(['lesson.chapter', 'questions'])
+            ->findOrFail($assessmentId);
+
+        $user = Auth::user();
+
+        // Vérifier le nombre de tentatives
+        $attempts = UserAssessmentResult::where('user_id', $user->id)
+            ->where('assessment_id', $assessment->id)
+            ->count();
+
+        if ($attempts >= $assessment->max_attempts) {
+            return redirect()->back()
+                ->with('error', 'Vous avez atteint le nombre maximum de tentatives.');
+        }
+
+        // Préparer les questions (mélanger si nécessaire)
+        $questions = $assessment->questions;
+        if ($assessment->shuffle_questions) {
+            $questions = $questions->shuffle();
+        }
+
+        return view('assessment.start', compact('assessment', 'questions', 'attempts'));
+    }
+
+    public function submit(Request $request, $assessmentId)
+    {
+        $assessment = Assessment::with('questions')->findOrFail($assessmentId);
+        $user = Auth::user();
+        $answers = $request->input('answers', []);
+        $startedAt = $request->input('started_at');
+
+        $attemptNumber = UserAssessmentResult::where('user_id', $user->id)
+            ->where('assessment_id', $assessment->id)
+            ->count() + 1;
+
+        DB::beginTransaction();
+
+        try {
+            $totalPoints = 0;
+            $earnedPoints = 0;
+            $questionResults = [];
+            $weakPoints = [];
+            $strongPoints = [];
+
+            // Évaluer chaque question
+            foreach ($assessment->questions as $question) {
+                $userAnswer = $answers[$question->id] ?? null;
+                $isCorrect = $this->evaluateAnswer($question, $userAnswer);
+                
+                $pointsEarned = $isCorrect ? $question->points : 0;
+                $earnedPoints += $pointsEarned;
+                $totalPoints += $question->points;
+
+                $questionResults[$question->id] = [
+                    'answer' => $userAnswer,
+                    'correct' => $isCorrect,
+                    'points' => $pointsEarned,
+                ];
+
+                // Identifier forces et faiblesses
+                if ($isCorrect) {
+                    $strongPoints[] = $question->id;
+                } else {
+                    $weakPoints[] = $question->id;
+                }
+            }
+
+            $percentage = $totalPoints > 0 ? round(($earnedPoints / $totalPoints) * 100) : 0;
+            $passed = $percentage >= $assessment->passing_score;
+
+            // Générer le feedback IA
+            $aiFeedback = $this->aiService->generateAssessmentFeedback(
+                $assessment,
+                $questionResults,
+                $percentage,
+                $user->preferences
+            );
+
+            // Créer le résultat
+            $result = UserAssessmentResult::create([
+                'user_id' => $user->id,
+                'assessment_id' => $assessment->id,
+                'score' => $earnedPoints,
+                'percentage' => $percentage,
+                'passed' => $passed,
+                'attempt_number' => $attemptNumber,
+                'time_taken_minutes' => $startedAt ? now()->diffInMinutes($startedAt) : null,
+                'answers' => $questionResults,
+                'ai_feedback' => $aiFeedback,
+                'weak_points' => $weakPoints,
+                'strong_points' => $strongPoints,
+                'started_at' => $startedAt ?? now(),
+                'completed_at' => now(),
+            ]);
+
+            // Sauvegarder les réponses détaillées
+            foreach ($assessment->questions as $question) {
+                $questionResult = $questionResults[$question->id];
+                
+                UserQuestionAnswer::create([
+                    'user_id' => $user->id,
+                    'user_assessment_result_id' => $result->id,
+                    'question_id' => $question->id,
+                    'user_answer' => $questionResult['answer'],
+                    'is_correct' => $questionResult['correct'],
+                    'points_earned' => $questionResult['points'],
+                    'ai_explanation' => $this->aiService->explainAnswer($question, $questionResult['answer'], $user->preferences),
+                ]);
+            }
+
+            // Mettre à jour la progression de la leçon si réussi
+            if ($passed) {
+                $user->profile->increment('total_assessments_passed');
+                
+                if ($assessment->lesson) {
+                    UserLessonProgress::where('user_id', $user->id)
+                        ->where('lesson_id', $assessment->lesson_id)
+                        ->update(['status' => 'completed']);
+                }
+            } else {
+                // Marquer pour révision
+                if ($assessment->lesson) {
+                    UserLessonProgress::where('user_id', $user->id)
+                        ->where('lesson_id', $assessment->lesson_id)
+                        ->update(['status' => 'revision_needed']);
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->route('assessment.result', $result->id);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    public function result($resultId)
+    {
+        $result = UserAssessmentResult::with([
+            'assessment.lesson.chapter',
+            'assessment.questions',
+            'questionAnswers.question'
+        ])->findOrFail($resultId);
+
+        $this->authorize('view', $result);
+
+        return view('assessment.result', compact('result'));
+    }
+
+    public function retry($assessmentId)
+    {
+        return redirect()->route('assessment.start', $assessmentId);
+    }
+
+    private function evaluateAnswer(Question $question, $userAnswer)
+    {
+        if ($userAnswer === null) {
+            return false;
+        }
+
+        $correctAnswer = strtolower(trim($question->correct_answer));
+        $userAnswer = strtolower(trim($userAnswer));
+
+        switch ($question->question_type) {
+            case 'mcq':
+            case 'true_false':
+                return $correctAnswer === $userAnswer;
+            
+            case 'short_answer':
+                // Comparaison plus flexible pour les réponses courtes
+                return similar_text($correctAnswer, $userAnswer) / max(strlen($correctAnswer), strlen($userAnswer)) > 0.8;
+            
+            case 'calculation':
+                // Pour les calculs, comparer les valeurs numériques
+                return abs(floatval($correctAnswer) - floatval($userAnswer)) < 0.01;
+            
+            case 'fill_blank':
+                return $correctAnswer === $userAnswer;
+            
+            default:
+                return $correctAnswer === $userAnswer;
+        }
+    }
+}
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Http\Controllers\Assessment\InitialAssessmentController.php ===
+<?php
+// app/Http/Controllers/Assessment/InitialAssessmentController.php
+
+namespace App\Http\Controllers\Assessment;
+
+use App\Http\Controllers\Controller;
+use App\Models\Level;
+use App\Models\InitialAssessmentQuestion;
+use App\Models\UserInitialAssessment;
+use App\Models\UserProfile;
+use App\Services\AIService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class InitialAssessmentController extends Controller
+{
+    protected $aiService;
+
+    public function __construct(AIService $aiService)
+    {
+        $this->aiService = $aiService;
+    }
+
+    public function start()
+    {
+        $user = Auth::user();
+        
+        if ($user->initial_assessment_completed) {
+            return redirect()->route('dashboard');
+        }
+
+        return view('assessment.initial.start');
+    }
+
+    public function profileStep()
+    {
+        $levels = Level::where('is_active', true)->orderBy('order')->get();
+        
+        return view('assessment.initial.profile', compact('levels'));
+    }
+
+    public function saveProfile(Request $request)
+    {
+        $validated = $request->validate([
+            'age' => 'required|integer|min:10|max:100',
+            'declared_level_id' => 'required|exists:levels,id',
+            'school_option' => 'required|string',
+            'study_time_per_day' => 'required|integer|min:10|max:480',
+            'study_days_per_week' => 'required|integer|min:1|max:7',
+            'school_name' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:255',
+            'province' => 'nullable|string|max:255',
+        ]);
+
+        $user = Auth::user();
+        $user->profile->update($validated);
+
+        return redirect()->route('initial-assessment.knowledge');
+    }
+
+    public function knowledgeStep()
+    {
+        $user = Auth::user();
+        $declaredLevel = $user->profile->declaredLevel;
+
+        // Récupérer les questions adaptées au niveau déclaré et en dessous
+        $questions = InitialAssessmentQuestion::where('is_active', true)
+            ->where(function ($query) use ($declaredLevel) {
+                $query->whereNull('level_id')
+                    ->orWhereHas('level', function ($q) use ($declaredLevel) {
+                        $q->where('order', '<=', $declaredLevel->order);
+                    });
+            })
+            ->orderBy('difficulty_score')
+            ->orderBy('order')
+            ->take(10)
+            ->get();
+
+        return view('assessment.initial.knowledge', compact('questions'));
+    }
+
+    public function saveKnowledge(Request $request)
+    {
+        $user = Auth::user();
+        $answers = $request->input('answers', []);
+        
+        $questions = InitialAssessmentQuestion::whereIn('id', array_keys($answers))->get();
+        
+        $totalScore = 0;
+        $topicScores = [];
+        $responses = [];
+
+        foreach ($questions as $question) {
+            $userAnswer = $answers[$question->id] ?? null;
+            $isCorrect = $this->checkAnswer($question, $userAnswer);
+            
+            $responses[$question->id] = [
+                'answer' => $userAnswer,
+                'correct' => $isCorrect,
+                'topic' => $question->topic,
+            ];
+
+            if ($isCorrect) {
+                $totalScore += $question->difficulty_score;
+            }
+
+            // Calculer les scores par sujet
+            if ($question->topic) {
+                if (!isset($topicScores[$question->topic])) {
+                    $topicScores[$question->topic] = ['correct' => 0, 'total' => 0];
+                }
+                $topicScores[$question->topic]['total']++;
+                if ($isCorrect) {
+                    $topicScores[$question->topic]['correct']++;
+                }
+            }
+        }
+
+        // Déterminer le niveau recommandé
+        $recommendedLevel = $this->determineLevel($totalScore, $questions->count());
+
+        // Analyse par l'IA
+        $aiAnalysis = $this->aiService->analyzeInitialAssessment($responses, $topicScores, $user->profile);
+
+        // Sauvegarder le résultat
+        UserInitialAssessment::create([
+            'user_id' => $user->id,
+            'responses' => $responses,
+            'total_score' => $totalScore,
+            'recommended_level_id' => $recommendedLevel->id,
+            'topic_scores' => $topicScores,
+            'ai_analysis' => $aiAnalysis,
+            'completed_at' => now(),
+        ]);
+
+        // Mettre à jour le profil
+        $user->profile->update(['assessed_level_id' => $recommendedLevel->id]);
+
+        return redirect()->route('initial-assessment.preferences');
+    }
+
+    public function preferencesStep()
+    {
+        return view('assessment.initial.preferences');
+    }
+
+    public function savePreferences(Request $request)
+    {
+        $validated = $request->validate([
+            'tone' => 'required|in:formal,casual,friendly',
+            'detail_level' => 'required|in:concise,moderate,detailed',
+            'example_style' => 'required|in:everyday,scientific,mixed',
+            'show_math_steps' => 'boolean',
+            'preferred_study_time' => 'nullable|date_format:H:i',
+        ]);
+
+        $user = Auth::user();
+        $user->preferences->update($validated);
+        $user->update(['initial_assessment_completed' => true]);
+
+        return redirect()->route('initial-assessment.complete');
+    }
+
+    public function complete()
+    {
+        $user = Auth::user();
+        $assessment = UserInitialAssessment::where('user_id', $user->id)
+            ->latest()
+            ->first();
+
+        $recommendedLevel = $assessment->recommendedLevel;
+
+        return view('assessment.initial.complete', compact('assessment', 'recommendedLevel'));
+    }
+
+    private function checkAnswer($question, $userAnswer)
+    {
+        if ($userAnswer === null) {
+            return false;
+        }
+
+        $correctAnswer = strtolower(trim($question->correct_answer));
+        $userAnswer = strtolower(trim($userAnswer));
+
+        return $correctAnswer === $userAnswer;
+    }
+
+    private function determineLevel($score, $totalQuestions)
+    {
+        $percentage = ($score / ($totalQuestions * 5)) * 100; // Assuming max difficulty_score is 5
+
+        if ($percentage >= 80) {
+            return Level::where('code', '6HUM')->first();
+        } elseif ($percentage >= 60) {
+            return Level::where('code', '5HUM')->first();
+        } elseif ($percentage >= 40) {
+            return Level::where('code', '4SEC')->first();
+        } else {
+            return Level::where('code', '3SEC')->first();
+        }
+    }
+}
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Http\Controllers\Auth\AuthController.php ===
+<?php
+// app/Http/Controllers/Auth/AuthController.php
+
+namespace App\Http\Controllers\Auth;
+
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
+
+class AuthController extends Controller
+{
+    public function showLoginForm()
+    {
+        return view('auth.login');
+    }
+
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
+
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            $request->session()->regenerate();
+
+            $user = Auth::user();
+            
+            return redirect()->route('dashboard');
+        }
+
+        return back()->withErrors([
+            'email' => 'Les identifiants fournis ne correspondent pas à nos enregistrements.',
+        ])->onlyInput('email');
+    }
+
+    public function showRegistrationForm()
+    {
+        return view('auth.register');
+    }
+
+    public function register(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'phone' => ['nullable', 'string', 'max:20'],
+            'password' => ['required', 'confirmed', Password::defaults()],
+        ]);
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'] ?? null,
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        Auth::login($user);
+
+        return redirect()->route('dashboard');
+    }
+
+    public function logout(Request $request)
+    {
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/');
+    }
+}
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Http\Controllers\Auth\LoginController.php ===
+<?php
+
+namespace App\Http\Controllers\Auth;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class LoginController extends Controller
+{
+    public function showLoginForm()
+    {
+        return view('auth.login'); // Note: minuscule pour auth/login
+    }
+
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            $request->session()->regenerate();
+            
+            $user = Auth::user();
+            
+            // Mettre à jour les informations de connexion
+            $user->update([
+                'last_login_at' => now(),
+                'last_active_at' => now(),
+                'is_active' => true,
+            ]);
+            
+            // Mettre à jour la série (streak)
+            $user->updateStreak();
+
+            if (!$user->initial_assessment_completed) {
+                return redirect()->route('initial-assessment.start');
+            }
+
+            return redirect()->intended(route('dashboard'));
+        }
+
+        return back()->withErrors([
+            'email' => 'Les identifiants fournis ne correspondent pas.',
+        ])->onlyInput('email');
+    }
+
+    public function logout(Request $request)
+    {
+        // Marquer l'utilisateur comme inactif
+        if (Auth::check()) {
+            Auth::user()->update(['is_active' => false]);
+        }
+        
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('home');
+    }
+}
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Http\Controllers\Auth\RegisterController.php ===
+<?php
+// app/Http/Controllers/Auth/RegisterController.php
+
+namespace App\Http\Controllers\Auth;
+
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Models\UserProfile;
+use App\Models\UserPreference;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
+// use Inertia\Inertia;
+
+class RegisterController extends Controller
+{
+    public function showRegistrationForm()
+    {
+        // return Inertia::render('auth.register');
+        return view('auth.register');
+    }
+
+    public function register(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'initial_assessment_completed' => false,
+        ]);
+
+        // Créer le profil vide
+        UserProfile::create(['user_id' => $user->id]);
+        
+        // Créer les préférences par défaut
+        UserPreference::create(['user_id' => $user->id]);
+
+        Auth::login($user);
+
+        return redirect()->route('initial-assessment.start');
+    }
+}
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Http\Controllers\contenu_fichiers_texte.txt ===
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Http\Controllers\AI\AIConversationController.php ===
+<?php
+
+namespace App\Http\Controllers\AI;
+
+use App\Http\Controllers\Controller;
+use App\Models\AIConversation;
+use App\Services\OpenRouterService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
+
+class AIConversationController extends Controller
+{
+    protected OpenRouterService $aiService;
+
+    public function __construct(OpenRouterService $aiService)
+    {
+        $this->aiService = $aiService;
+    }
+
+    public function assistant(Request $request)
+    {
+        $user = Auth::user();
+
+        $conversations = AIConversation::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        $activeConversation = null;
+        if ($request->has('conversation')) {
+            $activeConversation = AIConversation::where('user_id', $user->id)
+                ->find($request->conversation);
+        }
+
+        return view('ai.history', compact('conversations', 'activeConversation'));
+    }
+
+    public function history(Request $request)
+    {
+        return redirect()->route('ai.assistant', $request->all());
+    }
+
+    public function showConversation($id)
+    {
+        return redirect()->route('ai.assistant', ['conversation' => $id]);
+    }
+
+    public function askGeneral(Request $request)
+    {
+        $user = Auth::user();
+        $startTime = microtime(true);
+
+        // ✅ Validation JSON-friendly
+        $validator = Validator::make($request->all(), [
+            'message' => 'nullable|string|max:4000',
+            'file' => 'nullable|file|max:20480', // 20MB
+            'context' => 'nullable|string|in:lesson_help,general_question,file_analysis',
+            'lesson_id' => 'nullable|integer',
+        ]);
+
+        if ($validator->fails()) {
+            Log::warning('AI askGeneral: validation failed', [
+                'user_id' => $user?->id,
+                'errors' => $validator->errors()->toArray(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $fileData = null;
+        $attachmentPath = null;
+        $attachmentFilename = null;
+        $attachmentMimeType = null;
+
+        try {
+            Log::info('AI askGeneral: request received', [
+                'user_id' => $user?->id,
+                'has_file' => $request->hasFile('file'),
+                'message_len' => strlen((string) $request->message),
+                'context' => $request->context,
+                'model' => env('OPENROUTER_MODEL', 'openrouter/free'),
+            ]);
+
+            // ✅ Fichier
+            if ($request->hasFile('file')) {
+                $file = $request->file('file');
+
+                $allowedMimes = [
+                    'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+                    'application/pdf',
+                    'audio/mpeg', 'audio/wav', 'audio/mp3', 'audio/ogg',
+                    'video/mp4', 'video/mpeg',
+                    'text/plain',
+                    'application/msword',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                ];
+
+                $mime = $file->getMimeType();
+                if (!in_array($mime, $allowedMimes)) {
+                    Log::warning('AI askGeneral: unsupported file type', [
+                        'user_id' => $user->id,
+                        'mime' => $mime,
+                        'filename' => $file->getClientOriginalName(),
+                    ]);
+
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Type de fichier non supporté. Utilisez: images, PDF, audio, vidéo, Word.',
+                    ], 422);
+                }
+
+                $attachmentPath = $file->store('ai_files/' . $user->id, 'private');
+                $attachmentFilename = $file->getClientOriginalName();
+                $attachmentMimeType = $mime;
+
+                $fileData = [
+                    'mime_type' => $attachmentMimeType,
+                    'data' => base64_encode(file_get_contents($file->getPathname())),
+                    'filename' => $attachmentFilename,
+                ];
+
+                Log::info('AI askGeneral: file prepared', [
+                    'user_id' => $user->id,
+                    'filename' => $attachmentFilename,
+                    'mime' => $attachmentMimeType,
+                    'size' => $file->getSize(),
+                    'stored_path' => $attachmentPath,
+                ]);
+            }
+
+            $context = $request->context ?? ($fileData ? 'file_analysis' : 'general_question');
+
+            $message = trim((string) $request->message);
+            if ($message === '' && $fileData) {
+                $message = 'Analyse ce document et explique-moi ce que tu vois.';
+            }
+            if ($message === '' && !$fileData) {
+                $message = 'Bonjour, peux-tu m’aider en chimie ?';
+            }
+
+            Log::info('AI askGeneral: calling OpenRouter', [
+                'user_id' => $user->id,
+                'context' => $context,
+                'has_attachment' => (bool) $fileData,
+                'model' => env('OPENROUTER_MODEL', 'openrouter/free'),
+            ]);
+
+            $responseText = $this->aiService->analyzeMultimodal(
+                $message,
+                $fileData ? [$fileData] : [],
+                [
+                    'user_level' => $user->profile->declared_level_id ?? 'secondaire',
+                    'subject' => 'chimie',
+                ]
+            );
+
+            $conversation = AIConversation::create([
+                'user_id' => $user->id,
+                'lesson_id' => $request->lesson_id ?? null,
+                'context' => $context,
+                'user_message' => $message,
+                'ai_response' => $responseText,
+                'attachment_filename' => $attachmentFilename,
+                'attachment_mime_type' => $attachmentMimeType,
+                'attachment_path' => $attachmentPath,
+                'has_attachment' => !empty($fileData),
+                'metadata' => [
+                    'processing_time_ms' => round((microtime(true) - $startTime) * 1000),
+                    'provider' => 'openrouter',
+                    'model' => env('OPENROUTER_MODEL', 'openrouter/free'),
+                    'file_size' => $request->hasFile('file') ? $request->file('file')->getSize() : null,
+                ],
+            ]);
+
+            Log::info('AI askGeneral: success', [
+                'user_id' => $user->id,
+                'conversation_id' => $conversation->id,
+                'time_ms' => round((microtime(true) - $startTime) * 1000),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'response' => $responseText,
+                'conversation_id' => $conversation->id,
+                'processing_time' => round((microtime(true) - $startTime) * 1000),
+            ]);
+
+        } catch (\Throwable $e) {
+            Log::error('AI askGeneral: exception', [
+                'user_id' => $user?->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+}
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Http\Controllers\AI\AIConversationControllerx.php ===
+<?php
+// app/Http/Controllers/AI/AIConversationController.php
+
+namespace App\Http\Controllers\AI;
+
+use App\Http\Controllers\Controller;
+use App\Models\AIConversation;
+use App\Models\Lesson;
+use App\Services\AIService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class AIConversationControllerx extends Controller
+{
+    protected $aiService;
+
+    public function __construct(AIService $aiService)
+    {
+        $this->aiService = $aiService;
+    }
+
+    public function ask(Request $request)
+    {
+        $validated = $request->validate([
+            'message' => 'required|string|max:2000',
+            'lesson_id' => 'nullable|exists:lessons,id',
+            'context' => 'required|in:lesson_help,general_question,feedback',
+        ]);
+
+        $user = Auth::user();
+        $lesson = $validated['lesson_id'] ? Lesson::find($validated['lesson_id']) : null;
+
+        // Générer la réponse IA
+        $response = $this->aiService->generateResponse(
+            $validated['message'],
+            $validated['context'],
+            $lesson,
+            $user->preferences,
+            $this->getRecentConversations($user, $lesson)
+        );
+
+        // Sauvegarder la conversation
+        $conversation = AIConversation::create([
+            'user_id' => $user->id,
+            'lesson_id' => $lesson?->id,
+            'context' => $validated['context'],
+            'user_message' => $validated['message'],
+            'ai_response' => $response,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'response' => $response,
+            'conversation_id' => $conversation->id,
+        ]);
+    }
+
+    public function history(Request $request)
+    {
+        $user = Auth::user();
+
+        $query = AIConversation::where('user_id', $user->id)
+            ->with('lesson');
+
+        if ($request->has('lesson_id')) {
+            $query->where('lesson_id', $request->lesson_id);
+        }
+
+        if ($request->has('context')) {
+            $query->where('context', $request->context);
+        }
+
+        $conversations = $query->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        return view('ai.history', compact('conversations'));
+    }
+
+    private function getRecentConversations($user, $lesson = null)
+    {
+        $query = AIConversation::where('user_id', $user->id);
+
+        if ($lesson) {
+            $query->where('lesson_id', $lesson->id);
+        }
+
+        return $query->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+    }
+}
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Http\Controllers\AI\AIConversationControllery.php ===
+<?php
+
+namespace App\Http\Controllers\AI;
+
+use App\Http\Controllers\Controller;
+use App\Models\AIConversation;
+use App\Models\Lesson;
+use App\Services\AIService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+
+class AIConversationControllery extends Controller
+{
+    protected $aiService;
+
+    public function __construct(AIService $aiService)
+    {
+        $this->aiService = $aiService;
+    }
+
+    /**
+     * Page principale de l'assistant IA avec chat intégré
+     */
+    public function assistant(Request $request)
+    {
+        Log::info('=== AI ASSISTANT ACCÈS ===', [
+            'user_id' => Auth::id(),
+            'ip' => $request->ip(),
+            'timestamp' => now()->toIso8601String()
+        ]);
+
+        try {
+            $user = Auth::user();
+
+            // Vérifier si on charge une conversation spécifique
+            $conversationId = $request->get('conversation_id');
+            $conversation = null;
+
+            if ($conversationId) {
+                Log::info('Chargement conversation spécifique', ['conversation_id' => $conversationId]);
+                
+                $conversation = AIConversation::where('user_id', $user->id)
+                    ->with('lesson')
+                    ->find($conversationId);
+
+                if (!$conversation) {
+                    Log::warning('Conversation non trouvée', ['conversation_id' => $conversationId]);
+                } else {
+                    Log::info('Conversation chargée', [
+                        'conversation_id' => $conversation->id,
+                        'message_preview' => Str::limit($conversation->user_message, 50)
+                    ]);
+                }
+            }
+
+            // Récupérer les conversations récentes pour l'historique
+            $conversations = AIConversation::where('user_id', $user->id)
+                ->with('lesson')
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
+
+            Log::info('Conversations récupérées', ['count' => $conversations->count()]);
+
+            return view('ai.history', compact('conversations', 'conversation'));
+
+        } catch (\Exception $e) {
+            Log::error('Erreur assistant', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->with('error', 'Erreur lors du chargement de l\'assistant');
+        }
+    }
+
+    /**
+     * Méthode dédiée pour les questions générales (chat principal)
+     */
+    public function askGeneral(Request $request)
+    {
+        $startTime = microtime(true);
+        
+        Log::info('=== AI ASK GENERAL DÉMARRÉ ===', [
+            'user_id' => Auth::id(),
+            'ip' => $request->ip(),
+            'input' => $request->all()
+        ]);
+
+        // Validation
+        try {
+            $validated = $request->validate([
+                'message' => 'required|string|max:2000|min:2',
+                'context' => 'required|in:lesson_help,general_question,feedback',
+                'conversation_id' => 'nullable|integer',
+                'lesson_id' => 'nullable|exists:lessons,id',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::warning('Validation échouée', ['errors' => $e->errors()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Données invalides',
+                'errors' => $e->errors()
+            ], 422);
+        }
+
+        $user = Auth::user();
+
+        try {
+            // Vérifier le service AI
+            if (!$this->aiService) {
+                Log::error('Service AI non initialisé');
+                throw new \Exception('Service AI indisponible');
+            }
+
+            // Préparer le contexte pour l'IA
+            $context = $this->buildContext($user, $validated);
+
+            Log::info('Contexte construit', [
+                'user_level' => $context['user_level'] ?? null,
+                'has_lesson' => isset($context['lesson_title'])
+            ]);
+
+            // Appel à l'API DeepSeek avec timeout et retry
+            $response = $this->callAIWithRetry($validated['message'], $context);
+
+            if (!$response['success']) {
+                throw new \Exception($response['error'] ?? 'Erreur IA inconnue');
+            }
+
+            $aiResponse = $response['content'];
+
+            // Sauvegarder la conversation
+            $conversation = $this->saveConversation($user, $validated, $aiResponse);
+
+            $duration = round((microtime(true) - $startTime) * 1000, 2);
+
+            Log::info('=== AI ASK GENERAL SUCCÈS ===', [
+                'conversation_id' => $conversation->id,
+                'duration_ms' => $duration,
+                'response_length' => strlen($aiResponse)
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'response' => $aiResponse,
+                'conversation_id' => $conversation->id,
+                'created_at' => $conversation->created_at->toIso8601String(),
+                'processing_time' => $duration
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('=== AI ASK GENERAL ERREUR ===', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'duration_ms' => round((microtime(true) - $startTime) * 1000, 2)
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur: ' . $e->getMessage(),
+                'error_code' => 'AI_ERROR'
+            ], 500);
+        }
+    }
+
+    /**
+     * Afficher l'historique complet des conversations
+     */
+    public function history(Request $request)
+    {
+        Log::info('AI History accès', ['user_id' => Auth::id()]);
+        
+        // Rediriger vers assistant pour avoir le chat
+        return redirect()->route('ai.assistant', $request->query());
+    }
+
+    /**
+     * Afficher une conversation spécifique
+     */
+    public function showConversation($id)
+    {
+        Log::info('Show conversation', ['conversation_id' => $id, 'user_id' => Auth::id()]);
+        
+        return redirect()->route('ai.assistant', ['conversation_id' => $id]);
+    }
+
+    /**
+     * Construire le contexte pour l'IA
+     */
+    private function buildContext($user, array $validated): array
+    {
+        $context = [
+            'user_level' => $user->profile->assessedLevel?->name ?? 'Non déterminé',
+            'user_age' => $user->profile->age,
+            'preferences' => [
+                'tone' => $user->preferences->tone ?? 'friendly',
+                'detail_level' => $user->preferences->detail_level ?? 'moderate',
+            ],
+            'subject' => 'chimie',
+            'program' => 'RDC secondaire',
+            'language' => 'français'
+        ];
+
+        if (!empty($validated['lesson_id'])) {
+            try {
+                $lesson = Lesson::find($validated['lesson_id']);
+                if ($lesson) {
+                    $context['lesson_title'] = $lesson->title;
+                    $context['lesson_content'] = Str::limit($lesson->content, 1000);
+                    $context['chapter'] = $lesson->chapter?->title;
+                }
+            } catch (\Exception $e) {
+                Log::warning('Erreur chargement leçon pour contexte', ['error' => $e->getMessage()]);
+            }
+        }
+
+        return $context;
+    }
+
+    /**
+     * Appel à l'IA avec retry
+     */
+    private function callAIWithRetry(string $message, array $context, int $maxRetries = 2): array
+    {
+        $attempt = 0;
+        
+        while ($attempt < $maxRetries) {
+            $attempt++;
+            
+            try {
+                Log::info("Tentative AI #{$attempt}");
+                
+                $response = $this->aiService->ask($message, $context);
+                
+                if (empty($response) || $response === "Aucune réponse reçue de l'API") {
+                    throw new \Exception('Réponse vide de l\'IA');
+                }
+
+                // Vérifier si c'est une erreur
+                if (str_starts_with($response, 'Erreur') || str_starts_with($response, 'Désolé')) {
+                    throw new \Exception($response);
+                }
+
+                return [
+                    'success' => true,
+                    'content' => $response
+                ];
+
+            } catch (\Exception $e) {
+                Log::warning("Tentative AI #{$attempt} échouée", ['error' => $e->getMessage()]);
+                
+                if ($attempt >= $maxRetries) {
+                    return [
+                        'success' => false,
+                        'error' => $e->getMessage()
+                    ];
+                }
+                
+                // Attendre avant retry (backoff exponentiel)
+                usleep(500000 * $attempt); // 0.5s, 1s
+            }
+        }
+
+        return ['success' => false, 'error' => 'Max retries atteint'];
+    }
+
+    /**
+     * Sauvegarder la conversation en base
+     */
+    private function saveConversation($user, array $validated, string $response): AIConversation
+    {
+        try {
+            $conversation = AIConversation::create([
+                'user_id' => $user->id,
+                'lesson_id' => $validated['lesson_id'] ?? null,
+                'context' => $validated['context'],
+                'user_message' => $validated['message'],
+                'ai_response' => $response,
+                'metadata' => [
+                    'tokens_used' => $this->estimateTokens($validated['message'] . $response),
+                    'model' => 'deepseek-chat',
+                    'ip' => request()->ip(),
+                    'user_agent' => Str::limit(request()->userAgent(), 200),
+                ],
+            ]);
+
+            Log::info('Conversation sauvegardée', ['id' => $conversation->id]);
+            
+            return $conversation;
+
+        } catch (\Exception $e) {
+            Log::error('Erreur sauvegarde conversation', ['error' => $e->getMessage()]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Estimation des tokens
+     */
+    private function estimateTokens(string $text): int
+    {
+        // Approximation: ~4 caractères par token pour français
+        return (int) ceil(mb_strlen($text) / 4);
+    }
+
+    /**
+     * Méthode pour les questions depuis une leçon (API JSON)
+     */
+    public function askFromLesson(Request $request, $lessonId)
+    {
+        Log::info('Ask from lesson', ['lesson_id' => $lessonId, 'user_id' => Auth::id()]);
+
+        try {
+            $validated = $request->validate([
+                'question' => 'required|string|max:1000',
+            ]);
+
+            $user = Auth::user();
+            $lesson = Lesson::findOrFail($lessonId);
+
+            $context = [
+                'lesson_title' => $lesson->title,
+                'lesson_content' => Str::limit($lesson->content, 1000),
+                'user_level' => $user->profile->assessedLevel?->name,
+            ];
+
+            $response = $this->aiService->ask($validated['question'], $context);
+
+            $conversation = AIConversation::create([
+                'user_id' => $user->id,
+                'lesson_id' => $lesson->id,
+                'context' => 'lesson_help',
+                'user_message' => $validated['question'],
+                'ai_response' => $response,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'response' => $response,
+                'conversation_id' => $conversation->id,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur askFromLesson', [
+                'lesson_id' => $lessonId,
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+}
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Http\Controllers\Assessment\AssessmentController.php ===
+<?php
+// app/Http/Controllers/Assessment/AssessmentController.php
+
+namespace App\Http\Controllers\Assessment;
+
+use App\Http\Controllers\Controller;
+use App\Models\Assessment;
+use App\Models\Question;
+use App\Models\UserAssessmentResult;
+use App\Models\UserQuestionAnswer;
+use App\Models\UserLessonProgress;
+use App\Services\AIService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+
+class AssessmentController extends Controller
+{
+    protected $aiService;
+
+    public function __construct(AIService $aiService)
+    {
+        $this->aiService = $aiService;
+    }
+
+    public function start($assessmentId)
+    {
+        $assessment = Assessment::with(['lesson.chapter', 'questions'])
+            ->findOrFail($assessmentId);
+
+        $user = Auth::user();
+
+        // Vérifier le nombre de tentatives
+        $attempts = UserAssessmentResult::where('user_id', $user->id)
+            ->where('assessment_id', $assessment->id)
+            ->count();
+
+        if ($attempts >= $assessment->max_attempts) {
+            return redirect()->back()
+                ->with('error', 'Vous avez atteint le nombre maximum de tentatives.');
+        }
+
+        // Préparer les questions (mélanger si nécessaire)
+        $questions = $assessment->questions;
+        if ($assessment->shuffle_questions) {
+            $questions = $questions->shuffle();
+        }
+
+        return view('assessment.start', compact('assessment', 'questions', 'attempts'));
+    }
+
+    public function submit(Request $request, $assessmentId)
+    {
+        $assessment = Assessment::with('questions')->findOrFail($assessmentId);
+        $user = Auth::user();
+        $answers = $request->input('answers', []);
+        $startedAt = $request->input('started_at');
+
+        $attemptNumber = UserAssessmentResult::where('user_id', $user->id)
+            ->where('assessment_id', $assessment->id)
+            ->count() + 1;
+
+        DB::beginTransaction();
+
+        try {
+            $totalPoints = 0;
+            $earnedPoints = 0;
+            $questionResults = [];
+            $weakPoints = [];
+            $strongPoints = [];
+
+            // Évaluer chaque question
+            foreach ($assessment->questions as $question) {
+                $userAnswer = $answers[$question->id] ?? null;
+                $isCorrect = $this->evaluateAnswer($question, $userAnswer);
+                
+                $pointsEarned = $isCorrect ? $question->points : 0;
+                $earnedPoints += $pointsEarned;
+                $totalPoints += $question->points;
+
+                $questionResults[$question->id] = [
+                    'answer' => $userAnswer,
+                    'correct' => $isCorrect,
+                    'points' => $pointsEarned,
+                ];
+
+                // Identifier forces et faiblesses
+                if ($isCorrect) {
+                    $strongPoints[] = $question->id;
+                } else {
+                    $weakPoints[] = $question->id;
+                }
+            }
+
+            $percentage = $totalPoints > 0 ? round(($earnedPoints / $totalPoints) * 100) : 0;
+            $passed = $percentage >= $assessment->passing_score;
+
+            // Générer le feedback IA
+            $aiFeedback = $this->aiService->generateAssessmentFeedback(
+                $assessment,
+                $questionResults,
+                $percentage,
+                $user->preferences
+            );
+
+            // Créer le résultat
+            $result = UserAssessmentResult::create([
+                'user_id' => $user->id,
+                'assessment_id' => $assessment->id,
+                'score' => $earnedPoints,
+                'percentage' => $percentage,
+                'passed' => $passed,
+                'attempt_number' => $attemptNumber,
+                'time_taken_minutes' => $startedAt ? now()->diffInMinutes($startedAt) : null,
+                'answers' => $questionResults,
+                'ai_feedback' => $aiFeedback,
+                'weak_points' => $weakPoints,
+                'strong_points' => $strongPoints,
+                'started_at' => $startedAt ?? now(),
+                'completed_at' => now(),
+            ]);
+
+            // Sauvegarder les réponses détaillées
+            foreach ($assessment->questions as $question) {
+                $questionResult = $questionResults[$question->id];
+                
+                UserQuestionAnswer::create([
+                    'user_id' => $user->id,
+                    'user_assessment_result_id' => $result->id,
+                    'question_id' => $question->id,
+                    'user_answer' => $questionResult['answer'],
+                    'is_correct' => $questionResult['correct'],
+                    'points_earned' => $questionResult['points'],
+                    'ai_explanation' => $this->aiService->explainAnswer($question, $questionResult['answer'], $user->preferences),
+                ]);
+            }
+
+            // Mettre à jour la progression de la leçon si réussi
+            if ($passed) {
+                $user->profile->increment('total_assessments_passed');
+                
+                if ($assessment->lesson) {
+                    UserLessonProgress::where('user_id', $user->id)
+                        ->where('lesson_id', $assessment->lesson_id)
+                        ->update(['status' => 'completed']);
+                }
+            } else {
+                // Marquer pour révision
+                if ($assessment->lesson) {
+                    UserLessonProgress::where('user_id', $user->id)
+                        ->where('lesson_id', $assessment->lesson_id)
+                        ->update(['status' => 'revision_needed']);
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->route('assessment.result', $result->id);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    public function result($resultId)
+    {
+        $result = UserAssessmentResult::with([
+            'assessment.lesson.chapter',
+            'assessment.questions',
+            'questionAnswers.question'
+        ])->findOrFail($resultId);
+
+        $this->authorize('view', $result);
+
+        return view('assessment.result', compact('result'));
+    }
+
+    public function retry($assessmentId)
+    {
+        return redirect()->route('assessment.start', $assessmentId);
+    }
+
+    private function evaluateAnswer(Question $question, $userAnswer)
+    {
+        if ($userAnswer === null) {
+            return false;
+        }
+
+        $correctAnswer = strtolower(trim($question->correct_answer));
+        $userAnswer = strtolower(trim($userAnswer));
+
+        switch ($question->question_type) {
+            case 'mcq':
+            case 'true_false':
+                return $correctAnswer === $userAnswer;
+            
+            case 'short_answer':
+                // Comparaison plus flexible pour les réponses courtes
+                return similar_text($correctAnswer, $userAnswer) / max(strlen($correctAnswer), strlen($userAnswer)) > 0.8;
+            
+            case 'calculation':
+                // Pour les calculs, comparer les valeurs numériques
+                return abs(floatval($correctAnswer) - floatval($userAnswer)) < 0.01;
+            
+            case 'fill_blank':
+                return $correctAnswer === $userAnswer;
+            
+            default:
+                return $correctAnswer === $userAnswer;
+        }
+    }
+}
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Http\Controllers\Assessment\InitialAssessmentController.php ===
+<?php
+// app/Http/Controllers/Assessment/InitialAssessmentController.php
+
+namespace App\Http\Controllers\Assessment;
+
+use App\Http\Controllers\Controller;
+use App\Models\Level;
+use App\Models\InitialAssessmentQuestion;
+use App\Models\UserInitialAssessment;
+use App\Models\UserProfile;
+use App\Services\AIService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class InitialAssessmentController extends Controller
+{
+    protected $aiService;
+
+    public function __construct(AIService $aiService)
+    {
+        $this->aiService = $aiService;
+    }
+
+    public function start()
+    {
+        $user = Auth::user();
+        
+        if ($user->initial_assessment_completed) {
+            return redirect()->route('dashboard');
+        }
+
+        return view('assessment.initial.start');
+    }
+
+    public function profileStep()
+    {
+        $levels = Level::where('is_active', true)->orderBy('order')->get();
+        
+        return view('assessment.initial.profile', compact('levels'));
+    }
+
+    public function saveProfile(Request $request)
+    {
+        $validated = $request->validate([
+            'age' => 'required|integer|min:10|max:100',
+            'declared_level_id' => 'required|exists:levels,id',
+            'school_option' => 'required|string',
+            'study_time_per_day' => 'required|integer|min:10|max:480',
+            'study_days_per_week' => 'required|integer|min:1|max:7',
+            'school_name' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:255',
+            'province' => 'nullable|string|max:255',
+        ]);
+
+        $user = Auth::user();
+        $user->profile->update($validated);
+
+        return redirect()->route('initial-assessment.knowledge');
+    }
+
+    public function knowledgeStep()
+    {
+        $user = Auth::user();
+        $declaredLevel = $user->profile->declaredLevel;
+
+        // Récupérer les questions adaptées au niveau déclaré et en dessous
+        $questions = InitialAssessmentQuestion::where('is_active', true)
+            ->where(function ($query) use ($declaredLevel) {
+                $query->whereNull('level_id')
+                    ->orWhereHas('level', function ($q) use ($declaredLevel) {
+                        $q->where('order', '<=', $declaredLevel->order);
+                    });
+            })
+            ->orderBy('difficulty_score')
+            ->orderBy('order')
+            ->take(10)
+            ->get();
+
+        return view('assessment.initial.knowledge', compact('questions'));
+    }
+
+    public function saveKnowledge(Request $request)
+    {
+        $user = Auth::user();
+        $answers = $request->input('answers', []);
+        
+        $questions = InitialAssessmentQuestion::whereIn('id', array_keys($answers))->get();
+        
+        $totalScore = 0;
+        $topicScores = [];
+        $responses = [];
+
+        foreach ($questions as $question) {
+            $userAnswer = $answers[$question->id] ?? null;
+            $isCorrect = $this->checkAnswer($question, $userAnswer);
+            
+            $responses[$question->id] = [
+                'answer' => $userAnswer,
+                'correct' => $isCorrect,
+                'topic' => $question->topic,
+            ];
+
+            if ($isCorrect) {
+                $totalScore += $question->difficulty_score;
+            }
+
+            // Calculer les scores par sujet
+            if ($question->topic) {
+                if (!isset($topicScores[$question->topic])) {
+                    $topicScores[$question->topic] = ['correct' => 0, 'total' => 0];
+                }
+                $topicScores[$question->topic]['total']++;
+                if ($isCorrect) {
+                    $topicScores[$question->topic]['correct']++;
+                }
+            }
+        }
+
+        // Déterminer le niveau recommandé
+        $recommendedLevel = $this->determineLevel($totalScore, $questions->count());
+
+        // Analyse par l'IA
+        $aiAnalysis = $this->aiService->analyzeInitialAssessment($responses, $topicScores, $user->profile);
+
+        // Sauvegarder le résultat
+        UserInitialAssessment::create([
+            'user_id' => $user->id,
+            'responses' => $responses,
+            'total_score' => $totalScore,
+            'recommended_level_id' => $recommendedLevel->id,
+            'topic_scores' => $topicScores,
+            'ai_analysis' => $aiAnalysis,
+            'completed_at' => now(),
+        ]);
+
+        // Mettre à jour le profil
+        $user->profile->update(['assessed_level_id' => $recommendedLevel->id]);
+
+        return redirect()->route('initial-assessment.preferences');
+    }
+
+    public function preferencesStep()
+    {
+        return view('assessment.initial.preferences');
+    }
+
+    public function savePreferences(Request $request)
+    {
+        $validated = $request->validate([
+            'tone' => 'required|in:formal,casual,friendly',
+            'detail_level' => 'required|in:concise,moderate,detailed',
+            'example_style' => 'required|in:everyday,scientific,mixed',
+            'show_math_steps' => 'boolean',
+            'preferred_study_time' => 'nullable|date_format:H:i',
+        ]);
+
+        $user = Auth::user();
+        $user->preferences->update($validated);
+        $user->update(['initial_assessment_completed' => true]);
+
+        return redirect()->route('initial-assessment.complete');
+    }
+
+    public function complete()
+    {
+        $user = Auth::user();
+        $assessment = UserInitialAssessment::where('user_id', $user->id)
+            ->latest()
+            ->first();
+
+        $recommendedLevel = $assessment->recommendedLevel;
+
+        return view('assessment.initial.complete', compact('assessment', 'recommendedLevel'));
+    }
+
+    private function checkAnswer($question, $userAnswer)
+    {
+        if ($userAnswer === null) {
+            return false;
+        }
+
+        $correctAnswer = strtolower(trim($question->correct_answer));
+        $userAnswer = strtolower(trim($userAnswer));
+
+        return $correctAnswer === $userAnswer;
+    }
+
+    private function determineLevel($score, $totalQuestions)
+    {
+        $percentage = ($score / ($totalQuestions * 5)) * 100; // Assuming max difficulty_score is 5
+
+        if ($percentage >= 80) {
+            return Level::where('code', '6HUM')->first();
+        } elseif ($percentage >= 60) {
+            return Level::where('code', '5HUM')->first();
+        } elseif ($percentage >= 40) {
+            return Level::where('code', '4SEC')->first();
+        } else {
+            return Level::where('code', '3SEC')->first();
+        }
+    }
+}
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Http\Controllers\Auth\AuthController.php ===
+<?php
+// app/Http/Controllers/Auth/AuthController.php
+
+namespace App\Http\Controllers\Auth;
+
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
+
+class AuthController extends Controller
+{
+    public function showLoginForm()
+    {
+        return view('auth.login');
+    }
+
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
+
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            $request->session()->regenerate();
+
+            $user = Auth::user();
+            
+            return redirect()->route('dashboard');
+        }
+
+        return back()->withErrors([
+            'email' => 'Les identifiants fournis ne correspondent pas à nos enregistrements.',
+        ])->onlyInput('email');
+    }
+
+    public function showRegistrationForm()
+    {
+        return view('auth.register');
+    }
+
+    public function register(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'phone' => ['nullable', 'string', 'max:20'],
+            'password' => ['required', 'confirmed', Password::defaults()],
+        ]);
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'] ?? null,
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        Auth::login($user);
+
+        return redirect()->route('dashboard');
+    }
+
+    public function logout(Request $request)
+    {
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/');
+    }
+}
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Http\Controllers\Auth\LoginController.php ===
+<?php
+
+namespace App\Http\Controllers\Auth;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class LoginController extends Controller
+{
+    public function showLoginForm()
+    {
+        return view('auth.login'); // Note: minuscule pour auth/login
+    }
+
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            $request->session()->regenerate();
+            
+            $user = Auth::user();
+            
+            // Mettre à jour les informations de connexion
+            $user->update([
+                'last_login_at' => now(),
+                'last_active_at' => now(),
+                'is_active' => true,
+            ]);
+            
+            // Mettre à jour la série (streak)
+            $user->updateStreak();
+
+            if (!$user->initial_assessment_completed) {
+                return redirect()->route('initial-assessment.start');
+            }
+
+            return redirect()->intended(route('dashboard'));
+        }
+
+        return back()->withErrors([
+            'email' => 'Les identifiants fournis ne correspondent pas.',
+        ])->onlyInput('email');
+    }
+
+    public function logout(Request $request)
+    {
+        // Marquer l'utilisateur comme inactif
+        if (Auth::check()) {
+            Auth::user()->update(['is_active' => false]);
+        }
+        
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('home');
+    }
+}
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Http\Controllers\Auth\RegisterController.php ===
+<?php
+// app/Http/Controllers/Auth/RegisterController.php
+
+namespace App\Http\Controllers\Auth;
+
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Models\UserProfile;
+use App\Models\UserPreference;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
+// use Inertia\Inertia;
+
+class RegisterController extends Controller
+{
+    public function showRegistrationForm()
+    {
+        // return Inertia::render('auth.register');
+        return view('auth.register');
+    }
+
+    public function register(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'initial_assessment_completed' => false,
+        ]);
+
+        // Créer le profil vide
+        UserProfile::create(['user_id' => $user->id]);
+        
+        // Créer les préférences par défaut
+        UserPreference::create(['user_id' => $user->id]);
+
+        Auth::login($user);
+
+        return redirect()->route('initial-assessment.start');
+    }
+}
+
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Http\Controllers\Controller.php ===
+<?php
+
+namespace App\Http\Controllers;
+
+abstract class Controller
+{
+    //
+}
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Http\Controllers\Dashboard\DashboardController.php ===
+<?php
+// app/Http/Controllers/Dashboard/DashboardController.php
+
+namespace App\Http\Controllers\Dashboard;
+
+use App\Http\Controllers\Controller;
+use App\Models\Chapter;
+use App\Models\Lesson;
+use App\Models\UserLessonProgress;
+use App\Models\UserAssessmentResult;
+use App\Models\Achievement;
+use App\Models\UserAchievement;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class DashboardController extends Controller
+{
+    public function index()
+    {
+        $user = Auth::user();
+        $profile = $user->profile;
+        $preferences = $user->preferences;
+
+        // Récupérer le niveau actuel
+        $currentLevel = $profile->assessedLevel ?? $profile->declaredLevel;
+
+        // Leçons recommandées
+        $recommendedLessons = $this->getRecommendedLessons($user, $currentLevel);
+
+        // Progression globale
+        $progressStats = $this->getProgressStats($user);
+
+        // Dernières activités
+        $recentActivity = UserLessonProgress::where('user_id', $user->id)
+            ->with('lesson.chapter')
+            ->orderBy('last_accessed_at', 'desc')
+            ->take(5)
+            ->get();
+
+        // Récompenses récentes
+        $recentAchievements = UserAchievement::where('user_id', $user->id)
+            ->with('achievement')
+            ->orderBy('earned_at', 'desc')
+            ->take(3)
+            ->get();
+
+        // Objectifs de la semaine
+        $weeklyGoals = $this->getWeeklyGoals($user);
+
+        return view('dashboard.index', compact(
+            'user',
+            'profile',
+            'preferences',
+            'currentLevel',
+            'recommendedLessons',
+            'progressStats',
+            'recentActivity',
+            'recentAchievements',
+            'weeklyGoals'
+        ));
+    }
+
+    private function getRecommendedLessons($user, $level)
+    {
+        if (!$level) {
+            return collect();
+        }
+
+        $completedLessonIds = UserLessonProgress::where('user_id', $user->id)
+            ->where('status', 'completed')
+            ->pluck('lesson_id');
+
+        return Lesson::whereHas('chapter', function ($query) use ($level) {
+                $query->where('level_id', $level->id);
+            })
+            ->whereNotIn('id', $completedLessonIds)
+            ->orderBy('chapter_id')
+            ->orderBy('order')
+            ->take(5)
+            ->with('chapter')
+            ->get();
+    }
+
+    private function getProgressStats($user)
+    {
+        $totalLessons = Lesson::where('is_active', true)->count();
+        $completedLessons = UserLessonProgress::where('user_id', $user->id)
+            ->where('status', 'completed')
+            ->count();
+
+        $totalAssessments = UserAssessmentResult::where('user_id', $user->id)->count();
+        $passedAssessments = UserAssessmentResult::where('user_id', $user->id)
+            ->where('passed', true)
+            ->count();
+
+        return [
+            'total_lessons' => $totalLessons,
+            'completed_lessons' => $completedLessons,
+            'completion_percentage' => $totalLessons > 0 ? round(($completedLessons / $totalLessons) * 100) : 0,
+            'total_assessments' => $totalAssessments,
+            'passed_assessments' => $passedAssessments,
+            'average_score' => UserAssessmentResult::where('user_id', $user->id)->avg('percentage') ?? 0,
+            'current_streak' => $user->profile->current_streak_days ?? 0,
+        ];
+    }
+
+    private function getWeeklyGoals($user)
+    {
+        $profile = $user->profile;
+        $targetLessonsPerWeek = ceil(($profile->study_time_per_day ?? 30) * ($profile->study_days_per_week ?? 5) / 30);
+
+        $lessonsThisWeek = UserLessonProgress::where('user_id', $user->id)
+            ->where('status', 'completed')
+            ->where('completed_at', '>=', now()->startOfWeek())
+            ->count();
+
+        return [
+            'target_lessons' => $targetLessonsPerWeek,
+            'completed_lessons' => $lessonsThisWeek,
+            'progress_percentage' => $targetLessonsPerWeek > 0 ? min(100, round(($lessonsThisWeek / $targetLessonsPerWeek) * 100)) : 0,
+        ];
+    }
+}
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Http\Controllers\Learning\ChapterController.php ===
+<?php
+// app/Http/Controllers/Learning/ChapterController.php
+
+namespace App\Http\Controllers\Learning;
+
+use App\Http\Controllers\Controller;
+use App\Models\Chapter;
+use App\Models\UserLessonProgress;
+use Illuminate\Support\Facades\Auth;
+
+class ChapterController extends Controller
+{
+    public function index($levelCode = null)
+    {
+        $user = Auth::user();
+        $currentLevel = $user->profile->assessedLevel ?? $user->profile->declaredLevel;
+
+        $query = Chapter::with(['level', 'lessons'])
+            ->where('is_active', true);
+
+        if ($levelCode) {
+            $query->whereHas('level', function ($q) use ($levelCode) {
+                $q->where('code', $levelCode);
+            });
+        } elseif ($currentLevel) {
+            $query->where('level_id', $currentLevel->id);
+        }
+
+        $chapters = $query->orderBy('order')->get();
+
+        // Ajouter les infos de progression pour chaque chapitre
+        $chapters->each(function ($chapter) use ($user) {
+            $totalLessons = $chapter->lessons->count();
+            $completedLessons = UserLessonProgress::where('user_id', $user->id)
+                ->whereIn('lesson_id', $chapter->lessons->pluck('id'))
+                ->where('status', 'completed')
+                ->count();
+
+            $chapter->progress_percentage = $totalLessons > 0 
+                ? round(($completedLessons / $totalLessons) * 100) 
+                : 0;
+            $chapter->completed_lessons = $completedLessons;
+            $chapter->total_lessons = $totalLessons;
+        });
+
+        return view('learning.chapter.index', compact('chapters', 'currentLevel'));
+    }
+
+    public function show($slug)
+    {
+        $chapter = Chapter::where('slug', $slug)
+            ->with(['level', 'lessons' => function ($query) {
+                $query->where('is_active', true)->orderBy('order');
+            }])
+            ->firstOrFail();
+
+        $user = Auth::user();
+
+        // Ajouter les infos de progression pour chaque leçon
+        $chapter->lessons->each(function ($lesson) use ($user) {
+            $progress = UserLessonProgress::where('user_id', $user->id)
+                ->where('lesson_id', $lesson->id)
+                ->first();
+
+            $lesson->user_status = $progress->status ?? 'not_started';
+            $lesson->user_progress = $progress->progress_percentage ?? 0;
+        });
+
+        // Chapitres adjacents
+        $previousChapter = Chapter::where('level_id', $chapter->level_id)
+            ->where('order', '<', $chapter->order)
+            ->orderBy('order', 'desc')
+            ->first();
+
+        $nextChapter = Chapter::where('level_id', $chapter->level_id)
+            ->where('order', '>', $chapter->order)
+            ->orderBy('order')
+            ->first();
+
+        return view('learning.chapter.show', compact('chapter', 'previousChapter', 'nextChapter'));
+    }
+}
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Http\Controllers\Learning\LessonController.php ===
+<?php
+// app/Http/Controllers/Learning/LessonController.php
+
+namespace App\Http\Controllers\Learning;
+
+use App\Http\Controllers\Controller;
+use App\Models\Lesson;
+use App\Models\Assessment;
+use App\Models\UserLessonProgress;
+use App\Models\StudySession;
+use App\Services\AIService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class LessonController extends Controller
+{
+    protected $aiService;
+
+    public function __construct(AIService $aiService)
+    {
+        $this->aiService = $aiService;
+    }
+
+    public function showX($chapterSlug, $lessonSlug)
+    {
+        $lesson = Lesson::where('slug', $lessonSlug)
+            ->whereHas('chapter', function ($query) use ($chapterSlug) {
+                $query->where('slug', $chapterSlug);
+            })
+            ->with(['chapter.level', 'assessments'])
+            ->firstOrFail();
+
+        $user = Auth::user();
+
+        // Vérifier/créer la progression
+        $progress = UserLessonProgress::firstOrCreate(
+            ['user_id' => $user->id, 'lesson_id' => $lesson->id],
+            [
+                'status' => 'in_progress',
+                'started_at' => now(),
+                'last_accessed_at' => now(),
+            ]
+        );
+
+        // Mettre à jour l'accès
+        $progress->update([
+            'last_accessed_at' => now(),
+            'access_count' => $progress->access_count + 1,
+        ]);
+
+        // Adapter le contenu selon les préférences
+        $preferences = $user->preferences;
+        $adaptedContent = $this->aiService->adaptContent($lesson, $preferences);
+
+        // Mini-quiz intégrés
+        $miniQuiz = Assessment::where('lesson_id', $lesson->id)
+            ->where('type', 'mini_quiz')
+            ->with('questions')
+            ->first();
+
+        // Leçons adjacentes
+        $previousLesson = Lesson::where('chapter_id', $lesson->chapter_id)
+            ->where('order', '<', $lesson->order)
+            ->orderBy('order', 'desc')
+            ->first();
+
+        $nextLesson = Lesson::where('chapter_id', $lesson->chapter_id)
+            ->where('order', '>', $lesson->order)
+            ->orderBy('order')
+            ->first();
+
+        return view('learning.lesson.show', compact(
+            'lesson',
+            'progress',
+            'adaptedContent',
+            'miniQuiz',
+            'previousLesson',
+            'nextLesson'
+        ));
+    }
+
+    public function show($chapterSlug, $lessonSlug)
+{
+    $lesson = Lesson::where('slug', $lessonSlug)
+        ->whereHas('chapter', function ($query) use ($chapterSlug) {
+            $query->where('slug', $chapterSlug);
+        })
+        ->with(['chapter.level', 'assessments'])
+        ->firstOrFail();
+
+    $user = Auth::user();
+    
+    // Récupérer le niveau via la relation
+    $level = $lesson->chapter->level;
+
+    // Vérifier/créer la progression
+    $progress = UserLessonProgress::firstOrCreate(
+        ['user_id' => $user->id, 'lesson_id' => $lesson->id],
+        [
+            'status' => 'in_progress',
+            'started_at' => now(),
+            'last_accessed_at' => now(),
+        ]
+    );
+
+    // Mettre à jour l'accès
+    $progress->update([
+        'last_accessed_at' => now(),
+        'access_count' => $progress->access_count + 1,
+    ]);
+
+    // Adapter le contenu selon les préférences
+    $preferences = $user->preferences;
+    $adaptedContent = $this->aiService->adaptContent($lesson, $preferences);
+
+    // Mini-quiz intégrés
+    $miniQuiz = Assessment::where('lesson_id', $lesson->id)
+        ->where('type', 'mini_quiz')
+        ->with('questions')
+        ->first();
+
+    // Leçons adjacentes
+    $previousLesson = Lesson::where('chapter_id', $lesson->chapter_id)
+        ->where('order', '<', $lesson->order)
+        ->orderBy('order', 'desc')
+        ->first();
+
+    $nextLesson = Lesson::where('chapter_id', $lesson->chapter_id)
+        ->where('order', '>', $lesson->order)
+        ->orderBy('order')
+        ->first();
+
+    return view('learning.lesson.show', compact(
+        'lesson',
+        'level',
+        'progress',
+        'adaptedContent',
+        'miniQuiz',
+        'previousLesson',
+        'nextLesson'
+    ));
+}
+
+    public function complete(Request $request, $lessonId)
+    {
+        $user = Auth::user();
+        $lesson = Lesson::findOrFail($lessonId);
+
+        $progress = UserLessonProgress::where('user_id', $user->id)
+            ->where('lesson_id', $lesson->id)
+            ->first();
+
+        if ($progress) {
+            $progress->update([
+                'status' => 'completed',
+                'progress_percentage' => 100,
+                'completed_at' => now(),
+            ]);
+
+            // Mettre à jour les stats du profil
+            $user->profile->increment('total_lessons_completed');
+            
+            // Vérifier les achievements
+            $this->checkAchievements($user);
+        }
+
+        // Rediriger vers le contrôle de fin de leçon
+        $endControl = Assessment::where('lesson_id', $lesson->id)
+            ->where('type', 'end_lesson_control')
+            ->first();
+
+        if ($endControl) {
+            return redirect()->route('assessment.start', $endControl->id);
+        }
+
+        return redirect()->route('chapter.show', $lesson->chapter->slug)
+            ->with('success', 'Leçon terminée avec succès !');
+    }
+
+    public function askAI(Request $request, $lessonId)
+    {
+        $validated = $request->validate([
+            'question' => 'required|string|max:1000',
+        ]);
+
+        $user = Auth::user();
+        $lesson = Lesson::findOrFail($lessonId);
+
+        $response = $this->aiService->answerQuestion(
+            $validated['question'],
+            $lesson,
+            $user->preferences
+        );
+
+        // Sauvegarder la conversation
+        $user->aiConversations()->create([
+            'lesson_id' => $lesson->id,
+            'context' => 'lesson_help',
+            'user_message' => $validated['question'],
+            'ai_response' => $response,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'response' => $response,
+        ]);
+    }
+
+    private function checkAchievements($user)
+    {
+        // Logique de vérification des achievements
+        // (implémentation détaillée dans AchievementService)
+    }
+
+    public function index()
+    {
+        $lessons = Lesson::where('is_active', true)
+            ->with('chapter') // charger le chapitre
+            ->orderBy('chapter_id')
+            ->orderBy('order')
+            ->get();
+
+        return view('learning.lesson.index', compact('lessons'));
+    }
+}
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Http\Controllers\Learning\LevelController.php ===
+<?php
+// app/Http/Controllers/Learning/LevelController.php
+
+namespace App\Http\Controllers\Learning;
+
+use App\Http\Controllers\Controller;
+use App\Models\Level;
+use App\Models\Chapter;
+use App\Models\UserLessonProgress;
+use Illuminate\Support\Facades\Auth;
+
+class LevelController extends Controller
+{
+    public function index()
+    {
+        $levels = Level::where('is_active', true)
+            ->withCount('chapters')
+            ->orderBy('order')
+            ->get();
+
+        $user = Auth::user();
+        $currentLevel = $user->profile->assessedLevel ?? $user->profile->declaredLevel;
+
+        return view('learning.level.index', compact('levels', 'currentLevel'));
+    }
+
+    public function show($code)
+    {
+        $level = Level::where('code', $code)
+            ->with(['chapters' => function ($query) {
+                $query->where('is_active', true)
+                    ->withCount('lessons')
+                    ->orderBy('order');
+            }])
+            ->firstOrFail();
+
+        $user = Auth::user();
+
+        // Calculer la progression pour chaque chapitre
+        $level->chapters->each(function ($chapter) use ($user) {
+            $lessonIds = $chapter->lessons->pluck('id');
+            $completedCount = UserLessonProgress::where('user_id', $user->id)
+                ->whereIn('lesson_id', $lessonIds)
+                ->where('status', 'completed')
+                ->count();
+
+            $chapter->progress_percentage = $chapter->lessons_count > 0
+                ? round(($completedCount / $chapter->lessons_count) * 100)
+                : 0;
+        });
+
+        return view('learning.level.show', compact('level'));
+    }
+}
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Http\Controllers\Notification\NotificationController.php ===
+<?php
+// app/Http/Controllers/Notification/NotificationController.php
+
+namespace App\Http\Controllers\Notification;
+
+use App\Http\Controllers\Controller;
+use App\Models\Notification;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class NotificationController extends Controller
+{
+    public function index()
+    {
+        $notifications = Notification::where('user_id', Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        return view('notifications.index', compact('notifications'));
+    }
+
+    public function markAsRead($id)
+    {
+        $notification = Notification::where('user_id', Auth::id())
+            ->findOrFail($id);
+
+        $notification->update([
+            'is_read' => true,
+            'read_at' => now(),
+        ]);
+
+        return back();
+    }
+
+    public function markAllAsRead()
+    {
+        Notification::where('user_id', Auth::id())
+            ->where('is_read', false)
+            ->update([
+                'is_read' => true,
+                'read_at' => now(),
+            ]);
+
+        return back()->with('success', 'Toutes les notifications ont été marquées comme lues.');
+    }
+
+    public function destroy($id)
+    {
+        $notification = Notification::where('user_id', Auth::id())
+            ->findOrFail($id);
+
+        $notification->delete();
+
+        return back()->with('success', 'Notification supprimée.');
+    }
+
+    public function getUnreadCount()
+    {
+        $count = Notification::where('user_id', Auth::id())
+            ->where('is_read', false)
+            ->count();
+
+        return response()->json(['count' => $count]);
+    }
+}
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Http\Controllers\Profile\PreferenceController.php ===
+<?php
+// app/Http/Controllers/Profile/PreferenceController.php
+
+namespace App\Http\Controllers\Profile;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class PreferenceController extends Controller
+{
+    public function edit()
+    {
+        $preferences = Auth::user()->preferences;
+        return view('profile.preferences', compact('preferences'));
+    }
+
+    public function update(Request $request)
+    {
+        $validated = $request->validate([
+            'tone' => 'required|in:formal,casual,friendly',
+            'detail_level' => 'required|in:concise,moderate,detailed',
+            'example_style' => 'required|in:everyday,scientific,mixed',
+            'show_math_steps' => 'boolean',
+            'enable_notifications' => 'boolean',
+            'enable_reminders' => 'boolean',
+            'preferred_study_time' => 'nullable|date_format:H:i',
+        ]);
+
+        Auth::user()->preferences->update($validated);
+
+        return back()->with('success', 'Préférences mises à jour avec succès.');
+    }
+}
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Http\Controllers\Profile\ProfileController.php ===
+<?php
+// app/Http/Controllers/Profile/ProfileController.php
+
+namespace App\Http\Controllers\Profile;
+
+use App\Http\Controllers\Controller;
+use App\Models\Level;
+use App\Models\UserAssessmentResult;
+use App\Models\UserLessonProgress;
+use App\Models\UserAchievement;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+
+class ProfileController extends Controller
+{
+    public function show()
+    {
+        $user = Auth::user();
+        $profile = $user->profile;
+        $preferences = $user->preferences;
+
+        // Statistiques détaillées
+        $stats = [
+            'total_lessons' => UserLessonProgress::where('user_id', $user->id)->count(),
+            'completed_lessons' => UserLessonProgress::where('user_id', $user->id)
+                ->where('status', 'completed')->count(),
+            'total_assessments' => UserAssessmentResult::where('user_id', $user->id)->count(),
+            'passed_assessments' => UserAssessmentResult::where('user_id', $user->id)
+                ->where('passed', true)->count(),
+            'average_score' => round(UserAssessmentResult::where('user_id', $user->id)
+                ->avg('percentage') ?? 0),
+            'total_time_minutes' => UserLessonProgress::where('user_id', $user->id)
+                ->sum('time_spent_minutes'),
+            'achievements_count' => UserAchievement::where('user_id', $user->id)->count(),
+        ];
+
+        // Évolution des scores (derniers 10 assessments)
+        $scoreHistory = UserAssessmentResult::where('user_id', $user->id)
+            ->orderBy('completed_at', 'desc')
+            ->take(10)
+            ->get(['percentage', 'completed_at'])
+            ->reverse();
+
+        return view('profile.show', compact('user', 'profile', 'preferences', 'stats', 'scoreHistory'));
+    }
+
+    public function edit()
+    {
+        $user = Auth::user();
+        $profile = $user->profile;
+        $levels = Level::where('is_active', true)->orderBy('order')->get();
+
+        return view('profile.edit', compact('user', 'profile', 'levels'));
+    }
+
+    public function update(Request $request)
+    {
+        $user = Auth::user();
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'age' => 'nullable|integer|min:10|max:100',
+            'school_option' => 'nullable|string|max:255',
+            'school_name' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:255',
+            'province' => 'nullable|string|max:255',
+            'study_time_per_day' => 'nullable|integer|min:10|max:480',
+            'study_days_per_week' => 'nullable|integer|min:1|max:7',
+        ]);
+
+        $user->update([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+        ]);
+
+        $user->profile->update([
+            'age' => $validated['age'],
+            'school_option' => $validated['school_option'],
+            'school_name' => $validated['school_name'],
+            'city' => $validated['city'],
+            'province' => $validated['province'],
+            'study_time_per_day' => $validated['study_time_per_day'],
+            'study_days_per_week' => $validated['study_days_per_week'],
+        ]);
+
+        return redirect()->route('profile.show')
+            ->with('success', 'Profil mis à jour avec succès.');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $validated = $request->validate([
+            'current_password' => 'required',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = Auth::user();
+
+        if (!Hash::check($validated['current_password'], $user->password)) {
+            return back()->withErrors(['current_password' => 'Le mot de passe actuel est incorrect.']);
+        }
+
+        $user->update([
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        return back()->with('success', 'Mot de passe mis à jour avec succès.');
+    }
+}
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Http\Controllers\Progress\AchievementController.php ===
+<?php
+// app/Http/Controllers/Progress/AchievementController.php
+
+namespace App\Http\Controllers\Progress;
+
+use App\Http\Controllers\Controller;
+use App\Models\Achievement;
+use App\Models\UserAchievement;
+use Illuminate\Support\Facades\Auth;
+
+class AchievementController extends Controller
+{
+    public function index()
+    {
+        $user = Auth::user();
+
+        $earnedAchievementIds = UserAchievement::where('user_id', $user->id)
+            ->pluck('achievement_id');
+
+        $earnedAchievements = Achievement::whereIn('id', $earnedAchievementIds)
+            ->where('is_active', true)
+            ->get()
+            ->map(function ($achievement) use ($user) {
+                $userAchievement = UserAchievement::where('user_id', $user->id)
+                    ->where('achievement_id', $achievement->id)
+                    ->first();
+                $achievement->earned_at = $userAchievement->earned_at;
+                return $achievement;
+            });
+
+        $lockedAchievements = Achievement::whereNotIn('id', $earnedAchievementIds)
+            ->where('is_active', true)
+            ->get();
+
+        $totalPoints = $earnedAchievements->sum('points_reward');
+
+        return view('progress.achievements', compact(
+            'earnedAchievements',
+            'lockedAchievements',
+            'totalPoints'
+        ));
+    }
+}
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Http\Controllers\Progress\ProgressController.php ===
+<?php
+// app/Http/Controllers/Progress/ProgressController.php
+
+namespace App\Http\Controllers\Progress;
+
+use App\Http\Controllers\Controller;
+use App\Models\Level;
+use App\Models\Chapter;
+use App\Models\UserLessonProgress;
+use App\Models\UserAssessmentResult;
+use App\Models\StudySession;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
+
+class ProgressController extends Controller
+{
+    public function index()
+    {
+        $user = Auth::user();
+
+        // Progression par niveau
+        $levels = Level::where('is_active', true)
+            ->with('chapters.lessons')
+            ->orderBy('order')
+            ->get();
+
+        $levelProgress = $levels->map(function ($level) use ($user) {
+            $lessonIds = $level->chapters->flatMap->lessons->pluck('id');
+            $totalLessons = $lessonIds->count();
+            $completedLessons = UserLessonProgress::where('user_id', $user->id)
+                ->whereIn('lesson_id', $lessonIds)
+                ->where('status', 'completed')
+                ->count();
+
+            return [
+                'level' => $level,
+                'total' => $totalLessons,
+                'completed' => $completedLessons,
+                'percentage' => $totalLessons > 0 ? round(($completedLessons / $totalLessons) * 100) : 0,
+            ];
+        });
+
+        // Historique des scores
+        $scoreHistory = UserAssessmentResult::where('user_id', $user->id)
+            ->orderBy('completed_at', 'desc')
+            ->take(20)
+            ->with('assessment.lesson')
+            ->get();
+
+        // Activité par jour (7 derniers jours)
+        $weeklyActivity = $this->getWeeklyActivity($user);
+
+        // Temps d'étude total
+        $totalStudyTime = StudySession::where('user_id', $user->id)
+            ->sum('duration_minutes');
+
+        return view('progress.index', compact(
+            'levelProgress',
+            'scoreHistory',
+            'weeklyActivity',
+            'totalStudyTime'
+        ));
+    }
+
+    public function history()
+    {
+        $user = Auth::user();
+
+        $lessonHistory = UserLessonProgress::where('user_id', $user->id)
+            ->with('lesson.chapter.level')
+            ->orderBy('last_accessed_at', 'desc')
+            ->paginate(20);
+
+        return view('progress.history', compact('lessonHistory'));
+    }
+
+    public function assessments()
+    {
+        $user = Auth::user();
+
+        $assessmentHistory = UserAssessmentResult::where('user_id', $user->id)
+            ->with('assessment.lesson.chapter')
+            ->orderBy('completed_at', 'desc')
+            ->paginate(20);
+
+        return view('progress.assessments', compact('assessmentHistory'));
+    }
+
+    private function getWeeklyActivity($user)
+    {
+        $activity = [];
+        
+        for ($i = 6; $i >= 0; $i--) {
+            $date = Carbon::now()->subDays($i)->toDateString();
+            
+            $lessonsCompleted = UserLessonProgress::where('user_id', $user->id)
+                ->whereDate('completed_at', $date)
+                ->count();
+
+            $assessmentsTaken = UserAssessmentResult::where('user_id', $user->id)
+                ->whereDate('completed_at', $date)
+                ->count();
+
+            $activity[] = [
+                'date' => $date,
+                'day' => Carbon::parse($date)->locale('fr')->isoFormat('ddd'),
+                'lessons' => $lessonsCompleted,
+                'assessments' => $assessmentsTaken,
+            ];
+        }
+
+        return $activity;
+    }
+}
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Http\Controllers\Settings\PasswordController.php ===
+<?php
+
+namespace App\Http\Controllers\Settings;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rules\Password;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class PasswordController extends Controller
+{
+    /**
+     * Show the user's password settings page.
+     */
+    public function edit(): Response
+    {
+        return Inertia::render('settings/password');
+    }
+
+    /**
+     * Update the user's password.
+     */
+    public function update(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', Password::defaults(), 'confirmed'],
+        ]);
+
+        $request->user()->update([
+            'password' => $validated['password'],
+        ]);
+
+        return back();
+    }
+}
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Http\Controllers\Settings\ProfileController.php ===
+<?php
+
+namespace App\Http\Controllers\Settings;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Settings\ProfileUpdateRequest;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class ProfileController extends Controller
+{
+    /**
+     * Show the user's profile settings page.
+     */
+    public function edit(Request $request): Response
+    {
+        return Inertia::render('settings/profile', [
+            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+            'status' => $request->session()->get('status'),
+        ]);
+    }
+
+    /**
+     * Update the user's profile settings.
+     */
+    public function update(ProfileUpdateRequest $request): RedirectResponse
+    {
+        $request->user()->fill($request->validated());
+
+        if ($request->user()->isDirty('email')) {
+            $request->user()->email_verified_at = null;
+        }
+
+        $request->user()->save();
+
+        return to_route('profile.edit');
+    }
+
+    /**
+     * Delete the user's account.
+     */
+    public function destroy(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'password' => ['required', 'current_password'],
+        ]);
+
+        $user = $request->user();
+
+        Auth::logout();
+
+        $user->delete();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/');
+    }
+}
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Http\Controllers\Settings\TwoFactorAuthenticationController.php ===
+<?php
+
+namespace App\Http\Controllers\Settings;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Settings\TwoFactorAuthenticationRequest;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+use Inertia\Inertia;
+use Inertia\Response;
+use Laravel\Fortify\Features;
+
+class TwoFactorAuthenticationController extends Controller implements HasMiddleware
+{
+    /**
+     * Get the middleware that should be assigned to the controller.
+     */
+    public static function middleware(): array
+    {
+        return Features::optionEnabled(Features::twoFactorAuthentication(), 'confirmPassword')
+            ? [new Middleware('password.confirm', only: ['show'])]
+            : [];
+    }
+
+    /**
+     * Show the user's two-factor authentication settings page.
+     */
+    public function show(TwoFactorAuthenticationRequest $request): Response
+    {
+        $request->ensureStateIsValid();
+
+        return Inertia::render('settings/two-factor', [
+            'twoFactorEnabled' => $request->user()->hasEnabledTwoFactorAuthentication(),
+            'requiresConfirmation' => Features::optionEnabled(Features::twoFactorAuthentication(), 'confirm'),
+        ]);
+    }
+}
+
+

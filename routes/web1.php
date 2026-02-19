@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 
 // Controllers Auth
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 
@@ -32,30 +34,42 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
+// Route::get('/', function () {
+//     return Inertia::render('welcome');
+// })->name('home');
+
 /*
 |--------------------------------------------------------------------------
-| Routes d'Authentification (Guest uniquement)
+| Routes d'Authentification
 |--------------------------------------------------------------------------
 */
 
 Route::middleware('guest')->group(function () {
-    // Connexion
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
-    
-    // Inscription
     Route::get('/register', [AuthController::class, 'showRegistrationForm'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
-    
-    // Mot de passe oublié
+});
+
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
+
+// Route::middleware('guest')->group(function () {
+//     // Inscription
+//     Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+//     Route::post('/register', [RegisterController::class, 'register']);
+
+//     // Connexion
+//     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+//     Route::post('/login', [LoginController::class, 'login']);
+
+//     // Mot de passe oublié
     Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
     Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
     Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
     Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
-});
+// });
 
-// Déconnexion (Auth requis)
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
 
 /*
 |--------------------------------------------------------------------------
@@ -67,7 +81,7 @@ Route::middleware('auth')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Évaluation Initiale (Obligatoire avant accès principal)
+    | Évaluation Initiale
     |--------------------------------------------------------------------------
     */
     Route::prefix('initial-assessment')->name('initial-assessment.')->group(function () {
@@ -182,15 +196,22 @@ Route::middleware('auth')->group(function () {
 
         /*
         |--------------------------------------------------------------------------
-        | Conversations IA (UNIQUE - plus de doublon)
+        | Conversations IA
         |--------------------------------------------------------------------------
         */
         Route::prefix('ai')->name('ai.')->group(function () {
-            Route::get('/assistant', [AIConversationController::class, 'assistant'])->name('assistant');
-            Route::post('/ask', [AIConversationController::class, 'askGeneral'])->name('ask');
+            Route::post('/ask', [AIConversationController::class, 'ask'])->name('ask');
             Route::get('/history', [AIConversationController::class, 'history'])->name('history');
-            Route::get('/conversation/{id}', [AIConversationController::class, 'showConversation'])->name('conversation.show');
         });
+
+
+// routes/web.php
+Route::prefix('ai')->name('ai.')->middleware(['auth', 'assessment.completed'])->group(function () {
+    Route::get('/assistant', [AIConversationController::class, 'assistant'])->name('assistant');
+    Route::post('/ask', [AIConversationController::class, 'askGeneral'])->name('ask');
+    Route::get('/history', [AIConversationController::class, 'history'])->name('history');
+    Route::get('/conversation/{id}', [AIConversationController::class, 'showConversation'])->name('conversation.show');
+});
 
         /*
         |--------------------------------------------------------------------------
@@ -209,35 +230,11 @@ Route::middleware('auth')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Routes API (AJAX)
+| Routes API (pour les requêtes AJAX)
 |--------------------------------------------------------------------------
 */
 
-Route::prefix('api')->middleware(['auth', 'assessment.completed'])->group(function () {
+Route::prefix('api')->middleware('auth')->group(function () {
+    Route::post('/ai/ask', [AIConversationController::class, 'ask']);
     Route::get('/notifications/unread-count', [NotificationController::class, 'getUnreadCount']);
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Route::get('/test-gemini', function () {
-    $service = new \App\Services\GeminiService();
-    
-    try {
-        $response = $service->chat('Explique la loi des gaz parfaits en 3 phrases');
-        return response()->json(['success' => true, 'response' => $response]);
-    } catch (\Exception $e) {
-        return response()->json(['success' => false, 'error' => $e->getMessage()]);
-    }
-})->middleware('auth');

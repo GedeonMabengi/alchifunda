@@ -1,0 +1,1529 @@
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\0001_01_01_000000_create_levels_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('levels', function (Blueprint $table) {
+            $table->id();
+            $table->string('name'); // 3ème secondaire, 4ème secondaire, etc.
+            $table->string('code')->unique(); // 3SEC, 4SEC, 5HUM, 6HUM
+            $table->text('description')->nullable();
+            $table->integer('order'); // Pour ordonner les niveaux
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('levels');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\0001_01_01_000000_create_users_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('users', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password');
+            $table->boolean('initial_assessment_completed')->default(false);
+            $table->boolean('is_active')->default(true);
+            $table->timestamp('last_login_at')->nullable();
+            $table->rememberToken();
+            $table->timestamps();
+            $table->softDeletes();
+            
+            // Colonnes spécifiques à votre application
+            $table->foreignId('current_level_id')->nullable()->constrained('levels');
+            $table->integer('total_points')->default(0);
+            $table->integer('streak_days')->default(0);
+            $table->timestamp('last_active_at')->nullable();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('users');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\0001_01_01_000001_create_cache_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('cache', function (Blueprint $table) {
+            $table->string('key')->primary();
+            $table->mediumText('value');
+            $table->integer('expiration');
+        });
+
+        Schema::create('cache_locks', function (Blueprint $table) {
+            $table->string('key')->primary();
+            $table->string('owner');
+            $table->integer('expiration');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('cache');
+        Schema::dropIfExists('cache_locks');
+    }
+};
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\0001_01_01_000002_create_jobs_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('jobs', function (Blueprint $table) {
+            $table->id();
+            $table->string('queue')->index();
+            $table->longText('payload');
+            $table->unsignedTinyInteger('attempts');
+            $table->unsignedInteger('reserved_at')->nullable();
+            $table->unsignedInteger('available_at');
+            $table->unsignedInteger('created_at');
+        });
+
+        Schema::create('job_batches', function (Blueprint $table) {
+            $table->string('id')->primary();
+            $table->string('name');
+            $table->integer('total_jobs');
+            $table->integer('pending_jobs');
+            $table->integer('failed_jobs');
+            $table->longText('failed_job_ids');
+            $table->mediumText('options')->nullable();
+            $table->integer('cancelled_at')->nullable();
+            $table->integer('created_at');
+            $table->integer('finished_at')->nullable();
+        });
+
+        Schema::create('failed_jobs', function (Blueprint $table) {
+            $table->id();
+            $table->string('uuid')->unique();
+            $table->text('connection');
+            $table->text('queue');
+            $table->longText('payload');
+            $table->longText('exception');
+            $table->timestamp('failed_at')->useCurrent();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('jobs');
+        Schema::dropIfExists('job_batches');
+        Schema::dropIfExists('failed_jobs');
+    }
+};
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2025_08_26_100418_add_two_factor_columns_to_users_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+            $table->text('two_factor_secret')->after('password')->nullable();
+            $table->text('two_factor_recovery_codes')->after('two_factor_secret')->nullable();
+            $table->timestamp('two_factor_confirmed_at')->after('two_factor_recovery_codes')->nullable();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn([
+                'two_factor_secret',
+                'two_factor_recovery_codes',
+                'two_factor_confirmed_at',
+            ]);
+        });
+    }
+};
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_073910_create_user_profiles_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('user_profiles', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->integer('age')->nullable();
+            $table->foreignId('declared_level_id')->nullable()->constrained('levels')->onDelete('set null'); // Niveau déclaré par l'utilisateur
+            $table->foreignId('assessed_level_id')->nullable()->constrained('levels')->onDelete('set null'); // Niveau évalué par l'IA
+            $table->integer('study_time_per_day')->nullable(); // En minutes
+            $table->integer('study_days_per_week')->nullable();
+            $table->string('school_option')->nullable(); // Scientifique, Littéraire, Commercial, etc.
+            $table->string('school_name')->nullable();
+            $table->string('city')->nullable();
+            $table->string('province')->nullable();
+            $table->integer('global_score')->default(0); // Score global de l'apprenant
+            $table->integer('total_lessons_completed')->default(0);
+            $table->integer('total_assessments_passed')->default(0);
+            $table->integer('current_streak_days')->default(0); // Jours consécutifs d'apprentissage
+            $table->integer('longest_streak_days')->default(0);
+            $table->date('last_activity_date')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('user_profiles');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_074007_create_user_preferences_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('user_preferences', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->enum('tone', ['formal', 'casual', 'friendly'])->default('friendly'); // Ton préféré
+            $table->enum('detail_level', ['concise', 'moderate', 'detailed'])->default('moderate'); // Niveau de détail
+            $table->enum('example_style', ['everyday', 'scientific', 'mixed'])->default('mixed'); // Style d'exemples
+            $table->boolean('show_math_steps')->default(true); // Afficher les étapes mathématiques détaillées
+            $table->boolean('enable_notifications')->default(true);
+            $table->boolean('enable_reminders')->default(true);
+            $table->time('preferred_study_time')->nullable(); // Heure préférée pour étudier
+            $table->string('language')->default('fr'); // Langue (fr pour français)
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('user_preferences');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_074359_create_chapters_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('chapters', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('level_id')->constrained()->onDelete('cascade');
+            $table->string('title');
+            $table->string('slug')->unique();
+            $table->text('description')->nullable();
+            $table->text('objectives')->nullable(); // Objectifs du chapitre (JSON ou texte)
+            $table->integer('order'); // Ordre dans le niveau
+            $table->integer('estimated_duration_minutes')->nullable(); // Durée estimée totale
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+            
+            $table->index(['level_id', 'order']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('chapters');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_074452_create_lessons_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('lessons', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('chapter_id')->constrained()->onDelete('cascade');
+            $table->string('title');
+            $table->string('slug')->unique();
+            $table->text('introduction')->nullable(); // Introduction de la leçon
+            $table->longText('content'); // Contenu principal de la leçon
+            $table->longText('math_demonstrations')->nullable(); // Démonstrations mathématiques (JSON ou Markdown)
+            $table->longText('practical_examples')->nullable(); // Exemples pratiques (JSON)
+            $table->text('summary')->nullable(); // Résumé de la leçon
+            $table->json('keywords')->nullable(); // Mots-clés pour la recherche
+            $table->integer('order'); // Ordre dans le chapitre
+            $table->integer('estimated_duration_minutes')->default(30);
+            $table->enum('difficulty', ['easy', 'medium', 'hard'])->default('medium');
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+            
+            $table->index(['chapter_id', 'order']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('lessons');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_074539_create_assessments_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('assessments', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('lesson_id')->constrained()->onDelete('cascade');
+            $table->string('title');
+            $table->enum('type', ['mini_quiz', 'end_lesson_control', 'chapter_exam'])->default('end_lesson_control');
+            $table->text('instructions')->nullable();
+            $table->integer('total_points')->default(100);
+            $table->integer('passing_score')->default(70); // Score minimum pour réussir (en %)
+            $table->integer('time_limit_minutes')->nullable(); // Limite de temps (null = illimité)
+            $table->integer('max_attempts')->default(3); // Nombre maximum de tentatives
+            $table->boolean('shuffle_questions')->default(true);
+            $table->boolean('show_correct_answers')->default(true); // Montrer les bonnes réponses après
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('assessments');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_074730_create_questions_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('questions', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('assessment_id')->constrained()->onDelete('cascade');
+            $table->text('question_text');
+            $table->enum('question_type', ['mcq', 'true_false', 'short_answer', 'calculation', 'fill_blank'])->default('mcq');
+            $table->json('options')->nullable(); // Pour les QCM : ["A" => "Option 1", "B" => "Option 2", ...]
+            $table->text('correct_answer'); // Réponse correcte
+            $table->text('explanation')->nullable(); // Explication de la réponse
+            $table->integer('points')->default(10);
+            $table->integer('order');
+            $table->enum('difficulty', ['easy', 'medium', 'hard'])->default('medium');
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+            
+            $table->index(['assessment_id', 'order']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('questions');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_074835_create_user_lesson_progresses_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('user_lesson_progress', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('lesson_id')->constrained()->onDelete('cascade');
+            $table->enum('status', ['not_started', 'in_progress', 'completed', 'revision_needed'])->default('not_started');
+            $table->integer('progress_percentage')->default(0); // 0-100
+            $table->integer('time_spent_minutes')->default(0); // Temps passé sur la leçon
+            $table->timestamp('started_at')->nullable();
+            $table->timestamp('completed_at')->nullable();
+            $table->timestamp('last_accessed_at')->nullable();
+            $table->integer('access_count')->default(0); // Nombre de fois accédée
+            $table->text('ai_notes')->nullable(); // Notes générées par l'IA sur la progression
+            $table->timestamps();
+            
+            $table->unique(['user_id', 'lesson_id']);
+            $table->index(['user_id', 'status']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('user_lesson_progress');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_075617_create_user_assessment_results_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('user_assessment_results', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('assessment_id')->constrained()->onDelete('cascade');
+            $table->integer('score'); // Score obtenu en points
+            $table->integer('percentage'); // Score en pourcentage
+            $table->boolean('passed'); // Réussi ou non
+            $table->integer('attempt_number')->default(1); // Numéro de tentative
+            $table->integer('time_taken_minutes')->nullable(); // Temps pris
+            $table->json('answers')->nullable(); // Réponses données par l'utilisateur
+            $table->longText('ai_feedback')->nullable(); // Feedback généré par l'IA
+            $table->json('weak_points')->nullable(); // Points faibles identifiés
+            $table->json('strong_points')->nullable(); // Points forts identifiés
+            $table->timestamp('started_at');
+            $table->timestamp('completed_at')->nullable();
+            $table->timestamps();
+            
+            $table->index(['user_id', 'assessment_id']);
+            $table->index(['user_id', 'passed']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('user_assessment_results');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_075713_create_user_question_answers_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('user_question_answers', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_assessment_result_id')->constrained('user_assessment_results')->onDelete('cascade');
+            $table->foreignId('question_id')->constrained()->onDelete('cascade');
+            $table->text('user_answer')->nullable();
+            $table->boolean('is_correct');
+            $table->integer('points_earned')->default(0);
+            $table->text('ai_explanation')->nullable(); // Explication personnalisée par l'IA
+            $table->timestamps();
+            
+            // Remplacer cette ligne :
+            // $table->index(['user_assessment_result_id', 'question_id']);
+            
+            // Par celle-ci avec un nom court :
+            $table->index(['user_assessment_result_id', 'question_id'], 'ua_result_question_idx');
+            
+            // Vous pourriez aussi vouloir ajouter un index pour user_id
+            // $table->index('user_id', 'ua_user_idx');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('user_question_answers');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_075823_create_initial_assessment_questions_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('initial_assessment_questions', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('level_id')->nullable()->constrained()->onDelete('set null'); // Niveau ciblé par la question
+            $table->text('question_text');
+            $table->enum('question_type', ['mcq', 'true_false', 'short_answer'])->default('mcq');
+            $table->json('options')->nullable();
+            $table->text('correct_answer');
+            $table->integer('difficulty_score')->default(1); // 1-10, pour calibrer le niveau
+            $table->string('topic')->nullable(); // Sujet couvert (atomes, réactions, etc.)
+            $table->integer('order');
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('initial_assessment_questions');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_075934_create_user_initial_assessments_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('user_initial_assessments', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->json('responses'); // Toutes les réponses données
+            $table->integer('total_score');
+            $table->foreignId('recommended_level_id')->nullable()->constrained('levels')->onDelete('set null');
+            $table->json('topic_scores')->nullable(); // Scores par sujet
+            $table->longText('ai_analysis')->nullable(); // Analyse détaillée par l'IA
+            $table->json('recommended_starting_chapters')->nullable(); // Chapitres recommandés pour commencer
+            $table->timestamp('completed_at');
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('user_initial_assessments');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_080348_create_ai_conversations_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('ai_conversations', function (Blueprint $table) {
+            $table->id();
+
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('lesson_id')->nullable()->constrained()->onDelete('set null');
+
+            // ✅ Ajout de 'file_analysis'
+            $table->enum('context', [
+                'lesson_help',
+                'initial_assessment',
+                'general_question',
+                'feedback',
+                'file_analysis',
+            ])->default('lesson_help');
+
+            $table->longText('user_message');
+            $table->longText('ai_response');
+
+            $table->string('attachment_filename')->nullable();
+            $table->string('attachment_mime_type')->nullable();
+            $table->string('attachment_path')->nullable();
+            $table->boolean('has_attachment')->default(false);
+
+            $table->json('metadata')->nullable();
+            $table->timestamps();
+
+            $table->index(['user_id', 'context']);
+            $table->index(['user_id', 'lesson_id']);
+            $table->index('has_attachment');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('ai_conversations');
+    }
+};
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_080449_create_achievements_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('achievements', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('code')->unique();
+            $table->text('description');
+            $table->string('icon')->nullable(); // Nom de l'icône ou chemin
+            $table->enum('type', ['lesson', 'chapter', 'streak', 'score', 'special'])->default('lesson');
+            $table->json('criteria'); // Critères pour obtenir le badge (JSON)
+            $table->integer('points_reward')->default(0);
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('achievements');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_084721_create_user_achievements_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('user_achievements', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('achievement_id')->constrained()->onDelete('cascade');
+            $table->timestamp('earned_at');
+            $table->timestamps();
+            
+            $table->unique(['user_id', 'achievement_id']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('user_achievements');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_084902_create_notifications_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('notifications', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('title');
+            $table->text('message');
+            $table->enum('type', ['reminder', 'achievement', 'progress', 'system', 'encouragement'])->default('system');
+            $table->json('data')->nullable(); // Données additionnelles
+            $table->boolean('is_read')->default(false);
+            $table->timestamp('read_at')->nullable();
+            $table->timestamps();
+            
+            $table->index(['user_id', 'is_read']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('notifications');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_085012_create_study_sessions_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('study_sessions', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->timestamp('started_at');
+            $table->timestamp('ended_at')->nullable();
+            $table->integer('duration_minutes')->nullable();
+            $table->integer('lessons_viewed')->default(0);
+            $table->integer('assessments_completed')->default(0);
+            $table->integer('questions_asked')->default(0); // Questions posées à l'IA
+            $table->json('activity_log')->nullable(); // Log détaillé des activités
+            $table->timestamps();
+            
+            $table->index(['user_id', 'started_at']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('study_sessions');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\contenu_fichiers_texte.txt ===
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\0001_01_01_000000_create_levels_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('levels', function (Blueprint $table) {
+            $table->id();
+            $table->string('name'); // 3ème secondaire, 4ème secondaire, etc.
+            $table->string('code')->unique(); // 3SEC, 4SEC, 5HUM, 6HUM
+            $table->text('description')->nullable();
+            $table->integer('order'); // Pour ordonner les niveaux
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('levels');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\0001_01_01_000000_create_users_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('users', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password');
+            $table->boolean('initial_assessment_completed')->default(false);
+            $table->boolean('is_active')->default(true);
+            $table->timestamp('last_login_at')->nullable();
+            $table->rememberToken();
+            $table->timestamps();
+            $table->softDeletes();
+            
+            // Colonnes spécifiques à votre application
+            $table->foreignId('current_level_id')->nullable()->constrained('levels');
+            $table->integer('total_points')->default(0);
+            $table->integer('streak_days')->default(0);
+            $table->timestamp('last_active_at')->nullable();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('users');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\0001_01_01_000001_create_cache_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('cache', function (Blueprint $table) {
+            $table->string('key')->primary();
+            $table->mediumText('value');
+            $table->integer('expiration');
+        });
+
+        Schema::create('cache_locks', function (Blueprint $table) {
+            $table->string('key')->primary();
+            $table->string('owner');
+            $table->integer('expiration');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('cache');
+        Schema::dropIfExists('cache_locks');
+    }
+};
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\0001_01_01_000002_create_jobs_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('jobs', function (Blueprint $table) {
+            $table->id();
+            $table->string('queue')->index();
+            $table->longText('payload');
+            $table->unsignedTinyInteger('attempts');
+            $table->unsignedInteger('reserved_at')->nullable();
+            $table->unsignedInteger('available_at');
+            $table->unsignedInteger('created_at');
+        });
+
+        Schema::create('job_batches', function (Blueprint $table) {
+            $table->string('id')->primary();
+            $table->string('name');
+            $table->integer('total_jobs');
+            $table->integer('pending_jobs');
+            $table->integer('failed_jobs');
+            $table->longText('failed_job_ids');
+            $table->mediumText('options')->nullable();
+            $table->integer('cancelled_at')->nullable();
+            $table->integer('created_at');
+            $table->integer('finished_at')->nullable();
+        });
+
+        Schema::create('failed_jobs', function (Blueprint $table) {
+            $table->id();
+            $table->string('uuid')->unique();
+            $table->text('connection');
+            $table->text('queue');
+            $table->longText('payload');
+            $table->longText('exception');
+            $table->timestamp('failed_at')->useCurrent();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('jobs');
+        Schema::dropIfExists('job_batches');
+        Schema::dropIfExists('failed_jobs');
+    }
+};
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2025_08_26_100418_add_two_factor_columns_to_users_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+            $table->text('two_factor_secret')->after('password')->nullable();
+            $table->text('two_factor_recovery_codes')->after('two_factor_secret')->nullable();
+            $table->timestamp('two_factor_confirmed_at')->after('two_factor_recovery_codes')->nullable();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn([
+                'two_factor_secret',
+                'two_factor_recovery_codes',
+                'two_factor_confirmed_at',
+            ]);
+        });
+    }
+};
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_073910_create_user_profiles_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('user_profiles', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->integer('age')->nullable();
+            $table->foreignId('declared_level_id')->nullable()->constrained('levels')->onDelete('set null'); // Niveau déclaré par l'utilisateur
+            $table->foreignId('assessed_level_id')->nullable()->constrained('levels')->onDelete('set null'); // Niveau évalué par l'IA
+            $table->integer('study_time_per_day')->nullable(); // En minutes
+            $table->integer('study_days_per_week')->nullable();
+            $table->string('school_option')->nullable(); // Scientifique, Littéraire, Commercial, etc.
+            $table->string('school_name')->nullable();
+            $table->string('city')->nullable();
+            $table->string('province')->nullable();
+            $table->integer('global_score')->default(0); // Score global de l'apprenant
+            $table->integer('total_lessons_completed')->default(0);
+            $table->integer('total_assessments_passed')->default(0);
+            $table->integer('current_streak_days')->default(0); // Jours consécutifs d'apprentissage
+            $table->integer('longest_streak_days')->default(0);
+            $table->date('last_activity_date')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('user_profiles');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_074007_create_user_preferences_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('user_preferences', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->enum('tone', ['formal', 'casual', 'friendly'])->default('friendly'); // Ton préféré
+            $table->enum('detail_level', ['concise', 'moderate', 'detailed'])->default('moderate'); // Niveau de détail
+            $table->enum('example_style', ['everyday', 'scientific', 'mixed'])->default('mixed'); // Style d'exemples
+            $table->boolean('show_math_steps')->default(true); // Afficher les étapes mathématiques détaillées
+            $table->boolean('enable_notifications')->default(true);
+            $table->boolean('enable_reminders')->default(true);
+            $table->time('preferred_study_time')->nullable(); // Heure préférée pour étudier
+            $table->string('language')->default('fr'); // Langue (fr pour français)
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('user_preferences');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_074359_create_chapters_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('chapters', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('level_id')->constrained()->onDelete('cascade');
+            $table->string('title');
+            $table->string('slug')->unique();
+            $table->text('description')->nullable();
+            $table->text('objectives')->nullable(); // Objectifs du chapitre (JSON ou texte)
+            $table->integer('order'); // Ordre dans le niveau
+            $table->integer('estimated_duration_minutes')->nullable(); // Durée estimée totale
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+            
+            $table->index(['level_id', 'order']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('chapters');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_074452_create_lessons_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('lessons', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('chapter_id')->constrained()->onDelete('cascade');
+            $table->string('title');
+            $table->string('slug')->unique();
+            $table->text('introduction')->nullable(); // Introduction de la leçon
+            $table->longText('content'); // Contenu principal de la leçon
+            $table->longText('math_demonstrations')->nullable(); // Démonstrations mathématiques (JSON ou Markdown)
+            $table->longText('practical_examples')->nullable(); // Exemples pratiques (JSON)
+            $table->text('summary')->nullable(); // Résumé de la leçon
+            $table->json('keywords')->nullable(); // Mots-clés pour la recherche
+            $table->integer('order'); // Ordre dans le chapitre
+            $table->integer('estimated_duration_minutes')->default(30);
+            $table->enum('difficulty', ['easy', 'medium', 'hard'])->default('medium');
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+            
+            $table->index(['chapter_id', 'order']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('lessons');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_074539_create_assessments_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('assessments', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('lesson_id')->constrained()->onDelete('cascade');
+            $table->string('title');
+            $table->enum('type', ['mini_quiz', 'end_lesson_control', 'chapter_exam'])->default('end_lesson_control');
+            $table->text('instructions')->nullable();
+            $table->integer('total_points')->default(100);
+            $table->integer('passing_score')->default(70); // Score minimum pour réussir (en %)
+            $table->integer('time_limit_minutes')->nullable(); // Limite de temps (null = illimité)
+            $table->integer('max_attempts')->default(3); // Nombre maximum de tentatives
+            $table->boolean('shuffle_questions')->default(true);
+            $table->boolean('show_correct_answers')->default(true); // Montrer les bonnes réponses après
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('assessments');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_074730_create_questions_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('questions', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('assessment_id')->constrained()->onDelete('cascade');
+            $table->text('question_text');
+            $table->enum('question_type', ['mcq', 'true_false', 'short_answer', 'calculation', 'fill_blank'])->default('mcq');
+            $table->json('options')->nullable(); // Pour les QCM : ["A" => "Option 1", "B" => "Option 2", ...]
+            $table->text('correct_answer'); // Réponse correcte
+            $table->text('explanation')->nullable(); // Explication de la réponse
+            $table->integer('points')->default(10);
+            $table->integer('order');
+            $table->enum('difficulty', ['easy', 'medium', 'hard'])->default('medium');
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+            
+            $table->index(['assessment_id', 'order']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('questions');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_074835_create_user_lesson_progresses_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('user_lesson_progress', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('lesson_id')->constrained()->onDelete('cascade');
+            $table->enum('status', ['not_started', 'in_progress', 'completed', 'revision_needed'])->default('not_started');
+            $table->integer('progress_percentage')->default(0); // 0-100
+            $table->integer('time_spent_minutes')->default(0); // Temps passé sur la leçon
+            $table->timestamp('started_at')->nullable();
+            $table->timestamp('completed_at')->nullable();
+            $table->timestamp('last_accessed_at')->nullable();
+            $table->integer('access_count')->default(0); // Nombre de fois accédée
+            $table->text('ai_notes')->nullable(); // Notes générées par l'IA sur la progression
+            $table->timestamps();
+            
+            $table->unique(['user_id', 'lesson_id']);
+            $table->index(['user_id', 'status']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('user_lesson_progress');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_075617_create_user_assessment_results_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('user_assessment_results', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('assessment_id')->constrained()->onDelete('cascade');
+            $table->integer('score'); // Score obtenu en points
+            $table->integer('percentage'); // Score en pourcentage
+            $table->boolean('passed'); // Réussi ou non
+            $table->integer('attempt_number')->default(1); // Numéro de tentative
+            $table->integer('time_taken_minutes')->nullable(); // Temps pris
+            $table->json('answers')->nullable(); // Réponses données par l'utilisateur
+            $table->longText('ai_feedback')->nullable(); // Feedback généré par l'IA
+            $table->json('weak_points')->nullable(); // Points faibles identifiés
+            $table->json('strong_points')->nullable(); // Points forts identifiés
+            $table->timestamp('started_at');
+            $table->timestamp('completed_at')->nullable();
+            $table->timestamps();
+            
+            $table->index(['user_id', 'assessment_id']);
+            $table->index(['user_id', 'passed']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('user_assessment_results');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_075713_create_user_question_answers_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('user_question_answers', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_assessment_result_id')->constrained('user_assessment_results')->onDelete('cascade');
+            $table->foreignId('question_id')->constrained()->onDelete('cascade');
+            $table->text('user_answer')->nullable();
+            $table->boolean('is_correct');
+            $table->integer('points_earned')->default(0);
+            $table->text('ai_explanation')->nullable(); // Explication personnalisée par l'IA
+            $table->timestamps();
+            
+            // Remplacer cette ligne :
+            // $table->index(['user_assessment_result_id', 'question_id']);
+            
+            // Par celle-ci avec un nom court :
+            $table->index(['user_assessment_result_id', 'question_id'], 'ua_result_question_idx');
+            
+            // Vous pourriez aussi vouloir ajouter un index pour user_id
+            // $table->index('user_id', 'ua_user_idx');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('user_question_answers');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_075823_create_initial_assessment_questions_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('initial_assessment_questions', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('level_id')->nullable()->constrained()->onDelete('set null'); // Niveau ciblé par la question
+            $table->text('question_text');
+            $table->enum('question_type', ['mcq', 'true_false', 'short_answer'])->default('mcq');
+            $table->json('options')->nullable();
+            $table->text('correct_answer');
+            $table->integer('difficulty_score')->default(1); // 1-10, pour calibrer le niveau
+            $table->string('topic')->nullable(); // Sujet couvert (atomes, réactions, etc.)
+            $table->integer('order');
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('initial_assessment_questions');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_075934_create_user_initial_assessments_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('user_initial_assessments', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->json('responses'); // Toutes les réponses données
+            $table->integer('total_score');
+            $table->foreignId('recommended_level_id')->nullable()->constrained('levels')->onDelete('set null');
+            $table->json('topic_scores')->nullable(); // Scores par sujet
+            $table->longText('ai_analysis')->nullable(); // Analyse détaillée par l'IA
+            $table->json('recommended_starting_chapters')->nullable(); // Chapitres recommandés pour commencer
+            $table->timestamp('completed_at');
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('user_initial_assessments');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_080348_create_ai_conversations_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('ai_conversations', function (Blueprint $table) {
+            $table->id();
+
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('lesson_id')->nullable()->constrained()->onDelete('set null');
+
+            // ✅ Ajout de 'file_analysis'
+            $table->enum('context', [
+                'lesson_help',
+                'initial_assessment',
+                'general_question',
+                'feedback',
+                'file_analysis',
+            ])->default('lesson_help');
+
+            $table->longText('user_message');
+            $table->longText('ai_response');
+
+            $table->string('attachment_filename')->nullable();
+            $table->string('attachment_mime_type')->nullable();
+            $table->string('attachment_path')->nullable();
+            $table->boolean('has_attachment')->default(false);
+
+            $table->json('metadata')->nullable();
+            $table->timestamps();
+
+            $table->index(['user_id', 'context']);
+            $table->index(['user_id', 'lesson_id']);
+            $table->index('has_attachment');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('ai_conversations');
+    }
+};
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_080449_create_achievements_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('achievements', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('code')->unique();
+            $table->text('description');
+            $table->string('icon')->nullable(); // Nom de l'icône ou chemin
+            $table->enum('type', ['lesson', 'chapter', 'streak', 'score', 'special'])->default('lesson');
+            $table->json('criteria'); // Critères pour obtenir le badge (JSON)
+            $table->integer('points_reward')->default(0);
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('achievements');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_084721_create_user_achievements_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('user_achievements', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('achievement_id')->constrained()->onDelete('cascade');
+            $table->timestamp('earned_at');
+            $table->timestamps();
+            
+            $table->unique(['user_id', 'achievement_id']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('user_achievements');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_084902_create_notifications_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('notifications', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('title');
+            $table->text('message');
+            $table->enum('type', ['reminder', 'achievement', 'progress', 'system', 'encouragement'])->default('system');
+            $table->json('data')->nullable(); // Données additionnelles
+            $table->boolean('is_read')->default(false);
+            $table->timestamp('read_at')->nullable();
+            $table->timestamps();
+            
+            $table->index(['user_id', 'is_read']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('notifications');
+    }
+};
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\database\migrations\2026_01_09_085012_create_study_sessions_table.php ===
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('study_sessions', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->timestamp('started_at');
+            $table->timestamp('ended_at')->nullable();
+            $table->integer('duration_minutes')->nullable();
+            $table->integer('lessons_viewed')->default(0);
+            $table->integer('assessments_completed')->default(0);
+            $table->integer('questions_asked')->default(0); // Questions posées à l'IA
+            $table->json('activity_log')->nullable(); // Log détaillé des activités
+            $table->timestamps();
+            
+            $table->index(['user_id', 'started_at']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('study_sessions');
+    }
+};
+
+
+

@@ -1,0 +1,1001 @@
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Models\Achievement.php ===
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Achievement extends Model
+{
+    protected $fillable = [
+        'name',
+        'code',
+        'description',
+        'icon',
+        'type',
+        'criteria',
+        'points_reward',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'criteria' => 'array',
+        'is_active' => 'boolean',
+    ];
+
+    /**
+     * Un badge peut être obtenu par plusieurs utilisateurs
+     */
+    public function userAchievements(): HasMany
+    {
+        return $this->hasMany(UserAchievement::class);
+    }
+}
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Models\AIConversation.php ===
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
+
+class AIConversation extends Model
+{
+    use HasFactory;
+
+    protected $table = 'ai_conversations';
+
+    protected $fillable = [
+        'user_id',
+        'lesson_id',
+        'context',
+        'user_message',
+        'ai_response',
+        'attachment_filename',
+        'attachment_mime_type',
+        'attachment_path',
+        'has_attachment',
+        'metadata',
+    ];
+
+    protected $casts = [
+        'metadata' => 'array',
+        'has_attachment' => 'boolean',
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function lesson()
+    {
+        return $this->belongsTo(Lesson::class);
+    }
+
+    public function attachmentUrl(): ?string
+    {
+        return $this->attachment_path ? Storage::url($this->attachment_path) : null;
+    }
+
+    public function isImage(): bool
+    {
+        return $this->has_attachment && str_starts_with($this->attachment_mime_type, 'image/');
+    }
+
+    public function isPdf(): bool
+    {
+        return $this->has_attachment && $this->attachment_mime_type === 'application/pdf';
+    }
+}
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Models\Assessment.php ===
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Assessment extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'lesson_id',
+        'title',
+        'type',
+        'instructions',
+        'total_points',
+        'passing_score',
+        'time_limit_minutes',
+        'max_attempts',
+        'shuffle_questions',
+        'show_correct_answers',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+        'shuffle_questions' => 'boolean',
+        'show_correct_answers' => 'boolean',
+    ];
+
+    /**
+     * Relation : Une évaluation appartient à une leçon
+     */
+    public function lesson()
+    {
+        return $this->belongsTo(Lesson::class);
+    }
+
+    /**
+     * Relation : Une évaluation a plusieurs questions
+     */
+    public function questions()
+    {
+        return $this->hasMany(Question::class);
+    }
+}
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Models\Chapter.php ===
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Chapter extends Model
+{
+    protected $fillable = [
+        'name',
+        'slug',
+        'level_id',
+        'order',
+        'is_active',
+    ];
+
+    // Relation avec Level
+    public function level()
+    {
+        return $this->belongsTo(Level::class);
+    }
+
+    // Relation avec Lesson
+    public function lessons(): HasMany
+    {
+        return $this->hasMany(Lesson::class);
+    }
+
+    // Relation avec Course (si applicable)
+    // public function course()
+    // {
+    //     return $this->belongsTo(Course::class);
+    // }
+}
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Models\contenu_fichiers_texte.txt ===
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Models\Achievement.php ===
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Achievement extends Model
+{
+    protected $fillable = [
+        'name',
+        'code',
+        'description',
+        'icon',
+        'type',
+        'criteria',
+        'points_reward',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'criteria' => 'array',
+        'is_active' => 'boolean',
+    ];
+
+    /**
+     * Un badge peut être obtenu par plusieurs utilisateurs
+     */
+    public function userAchievements(): HasMany
+    {
+        return $this->hasMany(UserAchievement::class);
+    }
+}
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Models\AIConversation.php ===
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
+
+class AIConversation extends Model
+{
+    use HasFactory;
+
+    protected $table = 'ai_conversations';
+
+    protected $fillable = [
+        'user_id',
+        'lesson_id',
+        'context',
+        'user_message',
+        'ai_response',
+        'attachment_filename',
+        'attachment_mime_type',
+        'attachment_path',
+        'has_attachment',
+        'metadata',
+    ];
+
+    protected $casts = [
+        'metadata' => 'array',
+        'has_attachment' => 'boolean',
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function lesson()
+    {
+        return $this->belongsTo(Lesson::class);
+    }
+
+    public function attachmentUrl(): ?string
+    {
+        return $this->attachment_path ? Storage::url($this->attachment_path) : null;
+    }
+
+    public function isImage(): bool
+    {
+        return $this->has_attachment && str_starts_with($this->attachment_mime_type, 'image/');
+    }
+
+    public function isPdf(): bool
+    {
+        return $this->has_attachment && $this->attachment_mime_type === 'application/pdf';
+    }
+}
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Models\Assessment.php ===
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Assessment extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'lesson_id',
+        'title',
+        'type',
+        'instructions',
+        'total_points',
+        'passing_score',
+        'time_limit_minutes',
+        'max_attempts',
+        'shuffle_questions',
+        'show_correct_answers',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+        'shuffle_questions' => 'boolean',
+        'show_correct_answers' => 'boolean',
+    ];
+
+    /**
+     * Relation : Une évaluation appartient à une leçon
+     */
+    public function lesson()
+    {
+        return $this->belongsTo(Lesson::class);
+    }
+
+    /**
+     * Relation : Une évaluation a plusieurs questions
+     */
+    public function questions()
+    {
+        return $this->hasMany(Question::class);
+    }
+}
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Models\Chapter.php ===
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Chapter extends Model
+{
+    protected $fillable = [
+        'name',
+        'slug',
+        'level_id',
+        'order',
+        'is_active',
+    ];
+
+    // Relation avec Level
+    public function level()
+    {
+        return $this->belongsTo(Level::class);
+    }
+
+    // Relation avec Lesson
+    public function lessons(): HasMany
+    {
+        return $this->hasMany(Lesson::class);
+    }
+
+    // Relation avec Course (si applicable)
+    // public function course()
+    // {
+    //     return $this->belongsTo(Course::class);
+    // }
+}
+
+
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Models\initial_assessment_question.php ===
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class initial_assessment_question extends Model
+{
+    //
+}
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Models\Lesson.php ===
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class Lesson extends Model
+{
+    protected $fillable = [
+        'chapter_id',
+        'title',
+        'content',
+        'order',
+        'is_active',
+    ];
+
+    /**
+     * Une leçon appartient à un chapitre
+     */
+    public function chapter(): BelongsTo
+    {
+        return $this->belongsTo(Chapter::class);
+    }
+
+    public function assessments()
+    {
+        return $this->hasMany(Assessment::class);
+    }
+}
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Models\Level.php ===
+<?php
+// app/Models/Level.php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Level extends Model
+{
+    protected $fillable = [
+        'name',
+        'code',
+        'is_active',
+        'order',
+        // ajoute d'autres champs selon ta migration
+    ];
+
+    // Relation : un niveau a plusieurs chapitres
+    public function chapters()
+    {
+        return $this->hasMany(Chapter::class);
+    }
+
+    public function assessments()
+    {
+        return $this->hasMany(Assessment::class);
+    }
+
+}
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Models\notification.php ===
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class notification extends Model
+{
+    //
+}
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Models\Question.php ===
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Question extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'assessment_id',
+        'question_text',
+        'question_type',
+        'options',
+        'correct_answer',
+        'explanation',
+        'points',
+        'order',
+        'difficulty',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'options' => 'array',
+        'is_active' => 'boolean',
+    ];
+
+    /**
+     * Relation : Une question appartient à une évaluation
+     */
+    public function assessment()
+    {
+        return $this->belongsTo(Assessment::class);
+    }
+}
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Models\StudySession.php ===
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class StudySession extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'user_id',
+        'lesson_id',
+        'duration_minutes',
+        'started_at',
+        'ended_at',
+        'notes'
+    ];
+
+    protected $casts = [
+        'started_at' => 'datetime',
+        'ended_at' => 'datetime',
+        'duration_minutes' => 'integer',
+    ];
+
+    /**
+     * Relation avec l'utilisateur
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Relation avec la leçon (optionnel)
+     */
+    public function lesson(): BelongsTo
+    {
+        return $this->belongsTo(Lesson::class);
+    }
+}
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Models\User.php ===
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class User extends Authenticatable
+{
+    use HasFactory, Notifiable, SoftDeletes;
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<string>
+     */
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'initial_assessment_completed',
+        'is_active',
+        'last_login_at',
+        'current_level_id',
+        'total_points',
+        'streak_days',
+        'last_active_at',
+    ];
+
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<string>
+     */
+    protected $hidden = [
+        'password',
+        'remember_token', // Supprimez les références à two_factor
+    ];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+            'initial_assessment_completed' => 'boolean',
+            'is_active' => 'boolean',
+            'last_login_at' => 'datetime',
+            'last_active_at' => 'datetime',
+            'deleted_at' => 'datetime',
+        ];
+    }
+
+    /**
+     * Relations avec les autres modèles
+     */
+    public function profile()
+    {
+        return $this->hasOne(UserProfile::class);
+    }
+
+    public function preferences()
+    {
+        return $this->hasOne(UserPreferences::class);
+    }
+
+    public function level()
+    {
+        return $this->belongsTo(Level::class, 'current_level_id');
+    }
+
+    public function lessonProgresses()
+    {
+        return $this->hasMany(UserLessonProgress::class);
+    }
+
+    public function lessonProgress()
+    {
+        return $this->hasMany(UserLessonProgress::class);
+    }
+
+    public function assessmentResults()
+    {
+        return $this->hasMany(UserAssessmentResult::class);
+    }
+
+    public function questionAnswers()
+    {
+        return $this->hasMany(UserQuestionAnswer::class);
+    }
+
+    /**
+     * Méthodes pratiques
+     */
+    public function completeInitialAssessment()
+    {
+        $this->update([
+            'initial_assessment_completed' => true,
+            'initial_assessment_completed_at' => now(),
+        ]);
+    }
+
+    public function updateStreak()
+    {
+        if (!$this->last_active_at || $this->last_active_at->lt(now()->subDay())) {
+            $this->streak_days = 1;
+        } elseif ($this->last_active_at->lt(now()->subDays(2))) {
+            $this->streak_days = 0;
+        } else {
+            $this->increment('streak_days');
+        }
+        
+        $this->last_active_at = now();
+        $this->save();
+    }
+
+    public function addPoints(int $points)
+    {
+        $this->total_points += $points;
+        $this->save();
+        
+        // Vérifier si l'utilisateur peut monter de niveau
+        $this->checkLevelUp();
+    }
+
+    public function checkLevelUp()
+    {
+        $nextLevel = Level::where('required_points', '>', $this->total_points)
+            ->orderBy('required_points')
+            ->first();
+            
+        if ($nextLevel && $this->current_level_id !== $nextLevel->id) {
+            $this->current_level_id = $nextLevel->id;
+            $this->save();
+            
+            // Événement ou log pour la montée de niveau
+            // event(new UserLeveledUp($this, $nextLevel));
+        }
+    }
+
+    /**
+     * Relation : Un utilisateur a plusieurs conversations IA
+     */
+    public function aiConversations()
+    {
+        return $this->hasMany(AIConversation::class);
+    }
+
+    public function achievements()
+{
+    return $this->belongsToMany(Achievement::class, 'user_achievements')
+        ->withPivot('earned_at')  // ✅ Bon nom selon ta migration
+        ->withTimestamps();
+}
+}
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Models\UserAchievement.php ===
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class UserAchievement extends Model
+{
+    protected $fillable = [
+        'user_id',
+        'achievement_id',
+        'earned_at',
+    ];
+
+    protected $casts = [
+        'earned_at' => 'datetime',
+    ];
+
+    /**
+     * L'utilisateur qui a obtenu le badge
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Le badge obtenu
+     */
+    public function achievement(): BelongsTo
+    {
+        return $this->belongsTo(Achievement::class);
+    }
+}
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Models\UserAssessmentResult.php ===
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class UserAssessmentResult extends Model
+{
+    protected $fillable = [
+        'user_id',
+        'assessment_id',
+        'score',
+        'percentage',
+        'passed',
+        'attempt_number',
+        'time_taken_minutes',
+        'answers',
+        'ai_feedback',
+        'weak_points',
+        'strong_points',
+        'started_at',
+        'completed_at',
+    ];
+
+    protected $casts = [
+        'passed' => 'boolean',
+        'answers' => 'array',
+        'weak_points' => 'array',
+        'strong_points' => 'array',
+        'started_at' => 'datetime',
+        'completed_at' => 'datetime',
+    ];
+
+    // Relations
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function assessment(): BelongsTo
+    {
+        return $this->belongsTo(Assessment::class);
+    }
+}
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Models\UserInitialAssessment.php ===
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class UserInitialAssessment extends Model
+{
+    //
+}
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Models\UserLessonProgress.php ===
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class UserLessonProgress extends Model
+{
+    protected $table = 'user_lesson_progress';
+
+    protected $fillable = [
+        'user_id',
+        'lesson_id',
+        'status',
+        'progress_percentage',
+        'time_spent_minutes',
+        'started_at',
+        'completed_at',
+        'last_accessed_at',
+        'access_count',
+        'ai_notes',
+    ];
+
+    protected $casts = [
+        'started_at' => 'datetime',
+        'completed_at' => 'datetime',
+        'last_accessed_at' => 'datetime',
+    ];
+
+    // Relations
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function lesson(): BelongsTo
+    {
+        return $this->belongsTo(Lesson::class);
+    }
+}
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Models\UserPreferences.php ===
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class UserPreferences extends Model
+{
+    protected $fillable = [
+        'user_id',
+        'tone',
+        'detail_level',
+        'example_style',
+        'show_math_steps',
+        'enable_notifications',
+        'enable_reminders',
+        'preferred_study_time',
+        'language',
+    ];
+
+    protected $casts = [
+        'show_math_steps' => 'boolean',
+        'enable_notifications' => 'boolean',
+        'enable_reminders' => 'boolean',
+        'preferred_study_time' => 'datetime:H:i',
+    ];
+
+    // Relations
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+}
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Models\UserProfile.php ===
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class UserProfile extends Model
+{
+    protected $fillable = [
+        'user_id',
+        'age',
+        'declared_level_id',
+        'assessed_level_id',
+        'study_time_per_day',
+        'study_days_per_week',
+        'school_option',
+        'school_name',
+        'city',
+        'province',
+        'global_score',
+        'total_lessons_completed',
+        'total_assessments_passed',
+        'current_streak_days',
+        'longest_streak_days',
+        'last_activity_date',
+    ];
+
+    protected $casts = [
+        'last_activity_date' => 'date',
+    ];
+
+    // Relations
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function declaredLevel(): BelongsTo
+    {
+        return $this->belongsTo(Level::class, 'declared_level_id');
+    }
+
+    public function assessedLevel(): BelongsTo
+    {
+        return $this->belongsTo(Level::class, 'assessed_level_id');
+    }
+}
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Models\user_achievement.php ===
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class user_achievement extends Model
+{
+    //
+}
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Models\user_assessment_result.php ===
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class user_assessment_result extends Model
+{
+    //
+}
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Models\user_preference.php ===
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class user_preference extends Model
+{
+    //
+}
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Models\user_profile.php ===
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class user_profile extends Model
+{
+    //
+}
+
+
+=== Contenu du fichier : D:\code\full-stack\ALCHIFUNDA\simple\app\Models\user_question_answer.php ===
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class user_question_answer extends Model
+{
+    //
+}
+
+

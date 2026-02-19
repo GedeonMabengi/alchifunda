@@ -1,157 +1,282 @@
-{{-- resources/views/ai/history.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'Assistant Chimie IA - ALCHIFUNDA')
+@section('title', 'Assistant IA Multimodal - ALCHIFUNDA')
 
-@section('page-title', 'Assistant Chimie IA')
-@section('page-subtitle', 'Posez vos questions et explorez votre historique d\'apprentissage')
+@push('styles')
+<style>
+    :root {
+        --font-sans: 'Inter', ui-sans-serif, system-ui;
+        --color-brand: #3b82f6;
+        --color-secondary: #10b981;
+        --color-bg: #0a0a0a;
+    }
+
+    body {
+        background-color: #0a0a0a;
+        color: white;
+        overflow-x: hidden;
+    }
+
+    .glass {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        transition: all 0.3s ease;
+    }
+
+    .glass-card:hover {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(59, 130, 246, 0.3);
+        box-shadow: 0 0 40px rgba(59, 130, 246, 0.1);
+    }
+
+    /* Forme abstraite de molécule pour le fond */
+    .molecule-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .molecule-orbit {
+        position: absolute;
+        border-radius: 50%;
+        border: 1px solid rgba(59, 130, 246, 0.1);
+        animation: rotateSlow 40s linear infinite;
+    }
+
+    .molecule-dot {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--color-brand);
+        filter: blur(2px);
+        opacity: 0.3;
+    }
+
+    @keyframes rotateSlow {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+    }
+
+    .float-animation {
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .pulse-glow {
+        animation: pulseGlow 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulseGlow {
+        from { box-shadow: 0 0 20px rgba(59, 130, 246, 0.2); }
+        to { box-shadow: 0 0 40px rgba(59, 130, 246, 0.4); }
+    }
+
+    /* Badge scientifique */
+    .sci-badge {
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        color: #60a5fa;
+    }
+
+    /* Message bubbles */
+    .message-user {
+        background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+        border-radius: 24px 24px 4px 24px;
+    }
+
+    .message-ai {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 24px 24px 24px 4px;
+        backdrop-filter: blur(10px);
+    }
+
+    /* Scrollbar stylisée */
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: rgba(59, 130, 246, 0.3);
+        border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgba(59, 130, 246, 0.5);
+    }
+</style>
+@endpush
 
 @section('content')
-<div class="space-y-8">
-    <!-- En-tête avec statistiques -->
-    <div class="bg-linear-to-r from-brand/20 to-cyan-400/20 border border-brand/30 rounded-2xl p-8">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div>
-                <h1 class="text-3xl md:text-4xl font-bold text-white mb-2">Assistant Chimie IA</h1>
-                <p class="text-gray-300">
-                    Votre assistant personnel spécialisé dans le programme de chimie de la RDC
-                </p>
-                <div class="flex items-center gap-4 mt-4">
-                    <div class="inline-flex items-center gap-2 bg-black/30 border border-white/10 px-3 py-1 rounded-full text-xs">
-                        <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                        <span class="text-gray-300">En ligne</span>
-                    </div>
-                    <span class="text-sm text-gray-400">
-                        {{ $conversations->total() }} conversations
-                    </span>
-                </div>
+<!-- Molécules en arrière-plan -->
+<div class="molecule-bg">
+    <div class="molecule-orbit" style="width: 800px; height: 800px; top: -200px; right: -200px;"></div>
+    <div class="molecule-orbit" style="width: 600px; height: 600px; bottom: -100px; left: -100px; animation-duration: 60s;"></div>
+    <div class="molecule-dot" style="top: 20%; left: 10%;"></div>
+    <div class="molecule-dot" style="top: 70%; right: 15%;"></div>
+    <div class="molecule-dot" style="bottom: 30%; left: 20%;"></div>
+    <div class="molecule-dot" style="top: 40%; right: 30%;"></div>
+</div>
+
+<div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Badge nouveau système -->
+    <div class="flex justify-center mb-8 animate-fade-in">
+        <div class="inline-flex items-center gap-2 bg-zinc-900 border border-zinc-800 px-4 py-2 rounded-full text-xs">
+            <span class="text-gray-400">Assistant IA Multimodal</span>
+            <span class="sci-badge px-2 py-0.5 rounded-full text-white">Gemini Pro 1.5</span>
+        </div>
+    </div>
+
+    <!-- En-tête avec titre stylisé -->
+    <div class="text-center mb-12">
+        <h1 class="text-5xl md:text-6xl font-bold mb-4">
+            Assistant<span class="text-brand"> IA</span> Multimodal
+        </h1>
+        <p class="text-gray-400 text-lg max-w-2xl mx-auto">
+            Posez vos questions, partagez des images, PDF, audio ou vidéo pour une analyse scientifique approfondie
+        </p>
+        
+        <!-- Statistiques en verre -->
+        <div class="flex flex-wrap justify-center gap-4 mt-8">
+            <div class="glass px-4 py-2 rounded-full flex items-center gap-2">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                </span>
+                <span class="text-sm">{{ $conversations->total() }} conversations</span>
             </div>
-            
-            <!-- Statistiques IA -->
-            <div class="flex items-center gap-6">
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-white">{{ $conversations->total() }}</div>
-                    <div class="text-xs text-gray-400">Questions</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-white">
-                        {{ $conversations->where('context', 'lesson_help')->count() }}
-                    </div>
-                    <div class="text-xs text-gray-400">Aide leçons</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-white">
-                        {{ $conversations->count() > 0 ? round($conversations->sum(fn($c) => $c->metadata['tokens_used'] ?? 0) / 1000, 1) : 0 }}k
-                    </div>
-                    <div class="text-xs text-gray-400">Tokens utilisés</div>
-                </div>
+            <div class="glass px-4 py-2 rounded-full flex items-center gap-2">
+                <span class="text-brand">🧪</span>
+                <span class="text-sm">Analyse moléculaire</span>
+            </div>
+            <div class="glass px-4 py-2 rounded-full flex items-center gap-2">
+                <span class="text-secondary">🔬</span>
+                <span class="text-sm">Programme RDC</span>
             </div>
         </div>
     </div>
 
-    <div class="grid lg:grid-cols-3 gap-8">
-        <!-- Colonne gauche : Chat IA -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+        <!-- Zone de chat principale -->
         <div class="lg:col-span-2">
-            <!-- Interface de chat -->
-            <div class="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden flex flex-col shadow-2xl" style="height: 650px;">
-                <!-- En-tête du chat -->
-                <div class="bg-linear-to-r from-brand to-cyan-500 p-6">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="relative">
-                                <div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-                                    <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-                                    </svg>
-                                </div>
-                                <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-gray-900"></div>
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-white">Assistant Chimie IA</h3>
-                                <p class="text-sm text-white/80">Spécialisé dans le programme RDC</p>
-                            </div>
+            <div class="glass-card rounded-3xl overflow-hidden flex flex-col" style="height: 650px;">
+                <!-- En-tête du chat avec atomes -->
+                <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="flex -space-x-2">
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-brand to-blue-400 flex items-center justify-center text-xs border border-white/10">IA</div>
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-400 flex items-center justify-center text-xs border border-white/10">Toi</div>
                         </div>
-                        <button onclick="clearChat()" 
-                                class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors text-sm">
-                            Nouvelle conversation
-                        </button>
+                        <span class="text-sm text-gray-300">Session active</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-gray-500">⚛️ Mode scientifique</span>
                     </div>
                 </div>
 
-                <!-- Zone des messages -->
-                <div id="chat-messages" class="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-900">
-                    @if(isset($conversation) && $conversation)
-                        <!-- Afficher une conversation existante -->
-                        <div class="flex items-start justify-end animate-fade-in">
-                            <div class="flex-1 max-w-3xl">
-                                <div class="bg-linear-to-r from-brand to-cyan-500 text-white rounded-2xl p-4">
-                                    <p class="font-medium">{{ $conversation->user_message }}</p>
+                <!-- Messages -->
+                <div id="chat-messages" class="flex-1 overflow-y-auto p-6 space-y-4">
+                    @if($activeConversation)
+                        <!-- Message utilisateur -->
+                        <div class="flex justify-end animate-slide-in-right">
+                            <div class="max-w-[85%] sm:max-w-3xl">
+                                <div class="message-user p-4 shadow-lg">
+                                    <p class="text-sm sm:text-base text-white">{{ $activeConversation->user_message }}</p>
+                                    @if($activeConversation->has_attachment)
+                                        <div class="mt-3">
+                                            @if($activeConversation->isImage())
+                                                <div class="relative group">
+                                                    <img src="{{ $activeConversation->attachmentUrl() }}" class="max-h-32 rounded-lg border border-white/20 cursor-pointer hover:opacity-90 transition" onclick="openImageModal(this.src)">
+                                                </div>
+                                            @else
+                                                <div class="bg-white/10 backdrop-blur-sm rounded-lg p-2 flex items-center gap-2 text-sm">
+                                                    <span>📎</span>
+                                                    <span class="truncate">{{ $activeConversation->attachment_filename }}</span>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endif
                                 </div>
-                                <div class="text-xs text-gray-500 mt-1 text-right">
-                                    {{ $conversation->created_at->format('H:i') }}
-                                </div>
-                            </div>
-                            <div class="flex-shrink-0 ml-3">
-                                <div class="w-8 h-8 rounded-full bg-linear-to-r from-cyan-400 to-emerald-500 flex items-center justify-center">
-                                    <span class="text-xs font-bold text-white">VO</span>
+                                <div class="text-right text-xs text-gray-500 mt-1.5">
+                                    {{ $activeConversation->created_at->format('H:i') }}
                                 </div>
                             </div>
                         </div>
 
-                        <div class="flex items-start animate-fade-in">
-                            <div class="flex-shrink-0 mr-3">
-                                <div class="w-8 h-8 rounded-full bg-linear-to-r from-brand to-cyan-400 flex items-center justify-center">
-                                    <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-                                    </svg>
-                                </div>
-                            </div>
-                            <div class="flex-1 max-w-3xl">
-                                <div class="bg-gray-800/50 border border-gray-700 rounded-2xl p-4">
-                                    <div class="prose prose-invert max-w-none text-gray-300 text-sm">
-                                        {!! nl2br(e($conversation->ai_response)) !!}
+                        <!-- Réponse IA -->
+                        <div class="flex justify-start animate-slide-in-left">
+                            <div class="max-w-[85%] sm:max-w-3xl">
+                                <div class="message-ai p-4">
+                                    <div class="prose prose-invert max-w-none text-sm sm:text-base">
+                                        {!! nl2br(e($activeConversation->ai_response)) !!}
                                     </div>
                                 </div>
-                                <div class="text-xs text-gray-500 mt-1">
-                                    {{ $conversation->created_at->format('H:i') }}
+                                <div class="flex items-center gap-2 text-xs text-gray-500 mt-1.5">
+                                    <span class="text-brand">🔬 Assistant IA</span>
+                                    <span>•</span>
+                                    <span>{{ $activeConversation->created_at->format('H:i') }}</span>
                                 </div>
                             </div>
                         </div>
                     @else
-                        <!-- Message de bienvenue -->
-                        <div class="flex items-start animate-fade-in">
-                            <div class="flex-shrink-0 mr-3">
-                                <div class="w-8 h-8 rounded-full bg-linear-to-r from-brand to-cyan-400 flex items-center justify-center">
-                                    <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
-                                </div>
-                            </div>
-                            <div class="flex-1">
-                                <div class="bg-gray-800/50 border border-gray-700 rounded-2xl p-4">
-                                    <p class="text-white text-lg font-semibold mb-2">👋 Bonjour ! Je suis votre assistant en chimie</p>
-                                    <p class="text-gray-300 text-sm mb-3">
-                                        Je suis spécialisé dans le programme national de chimie de la RDC. 
-                                        Posez-moi des questions sur :
-                                    </p>
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <div class="flex items-center gap-2 text-xs text-gray-400">
-                                            <div class="w-1.5 h-1.5 bg-brand rounded-full"></div>
-                                            <span>Les concepts chimiques</span>
-                                        </div>
-                                        <div class="flex items-center gap-2 text-xs text-gray-400">
-                                            <div class="w-1.5 h-1.5 bg-cyan-400 rounded-full"></div>
-                                            <span>Les exercices et problèmes</span>
-                                        </div>
-                                        <div class="flex items-center gap-2 text-xs text-gray-400">
-                                            <div class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div>
-                                            <span>Les réactions et équations</span>
-                                        </div>
-                                        <div class="flex items-center gap-2 text-xs text-gray-400">
-                                            <div class="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
-                                            <span>Le tableau périodique</span>
-                                        </div>
+                        <!-- Message de bienvenue scientifique -->
+                        <div class="h-full flex items-center justify-center">
+                            <div class="text-center max-w-md mx-auto">
+                                <!-- Molécule animée -->
+                                <div class="relative w-32 h-32 mx-auto mb-6 float-animation">
+                                    <div class="absolute inset-0 bg-brand/20 rounded-full blur-3xl"></div>
+                                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-gradient-to-r from-brand to-purple-600 flex items-center justify-center text-2xl">
+                                        ⚛️
                                     </div>
+                                    <div class="absolute top-0 left-1/2 w-3 h-3 rounded-full bg-blue-400 transform -translate-x-1/2"></div>
+                                    <div class="absolute bottom-0 left-1/2 w-3 h-3 rounded-full bg-purple-400 transform -translate-x-1/2"></div>
+                                    <div class="absolute top-1/2 left-0 w-3 h-3 rounded-full bg-green-400 transform -translate-y-1/2"></div>
+                                    <div class="absolute top-1/2 right-0 w-3 h-3 rounded-full bg-yellow-400 transform -translate-y-1/2"></div>
+                                </div>
+                                
+                                <h2 class="text-2xl font-bold mb-3">Comment puis-je vous aider ?</h2>
+                                <p class="text-gray-400 mb-6">
+                                    Analyse de composés chimiques, résolution de problèmes, interprétation de spectres...
+                                </p>
+                                
+                                <!-- Types de fichiers supportés -->
+                                <div class="flex flex-wrap justify-center gap-2">
+                                    <span class="glass px-3 py-1.5 rounded-full text-xs flex items-center gap-1">
+                                        <span>🖼️</span> Images
+                                    </span>
+                                    <span class="glass px-3 py-1.5 rounded-full text-xs flex items-center gap-1">
+                                        <span>📄</span> PDF
+                                    </span>
+                                    <span class="glass px-3 py-1.5 rounded-full text-xs flex items-center gap-1">
+                                        <span>🎵</span> Audio
+                                    </span>
+                                    <span class="glass px-3 py-1.5 rounded-full text-xs flex items-center gap-1">
+                                        <span>🎬</span> Vidéo
+                                    </span>
+                                    <span class="glass px-3 py-1.5 rounded-full text-xs flex items-center gap-1">
+                                        <span>🧪</span> Formules
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -159,328 +284,344 @@
                 </div>
 
                 <!-- Zone de saisie -->
-                <div class="border-t border-gray-800 bg-gray-900 p-4">
-                    <form id="chat-form" onsubmit="sendMessage(event)" class="space-y-3">
-                        <div class="relative">
-                            <textarea 
-                                id="chat-input" 
-                                rows="2" 
-                                class="w-full bg-gray-800 border border-gray-700 rounded-xl p-3 text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent resize-none"
-                                placeholder="Posez votre question sur la chimie... Ex: 'Expliquez-moi la loi des gaz parfaits'"
-                                maxlength="2000"
-                                required
-                            ></textarea>
-                            <div class="absolute bottom-2 right-2 text-xs text-gray-600">
-                                <span id="char-count">0</span>/2000
+                <div class="border-t border-white/5 p-4 glass-card">
+                    <!-- Aperçu fichier -->
+                    <div id="file-preview" class="hidden mb-3">
+                        <div class="flex items-center gap-3 bg-white/5 rounded-xl p-2 border border-white/10 w-fit">
+                            <div id="preview-content" class="flex-shrink-0"></div>
+                            <div class="flex-1 min-w-0">
+                                <p id="file-name" class="text-sm font-medium text-white truncate"></p>
+                                <p id="file-size" class="text-xs text-gray-500"></p>
                             </div>
+                            <button onclick="clearFile()" class="p-1.5 hover:bg-white/10 rounded-full transition">
+                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
                         </div>
-                        
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <button 
-                                    type="button" 
-                                    onclick="suggestQuestion('Expliquez-moi la différence entre un acide et une base')"
-                                    class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 rounded-lg transition-colors text-xs"
-                                >
-                                    💡 Exemple
-                                </button>
-                                <button 
-                                    type="button" 
-                                    onclick="suggestQuestion('Donnez-moi un exercice sur les moles')"
-                                    class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 rounded-lg transition-colors text-xs"
-                                >
-                                    🧪 Exercice
-                                </button>
+                    </div>
+
+                    <form id="chat-form" onsubmit="sendMessage(event)">
+                        <div class="relative flex items-end gap-2">
+                            <div class="flex-1 relative">
+                                <textarea 
+                                    id="message-input" 
+                                    rows="1"
+                                    class="w-full bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-500 focus:border-brand/50 focus:ring-1 focus:ring-brand/50 resize-none pr-12 py-3 text-sm transition"
+                                    placeholder="Posez votre question scientifique..."
+                                    maxlength="4000"
+                                    oninput="autoResize(this)"
+                                ></textarea>
+                                
+                                <label for="file-upload" class="absolute bottom-2 right-2 p-2 text-gray-400 hover:text-brand cursor-pointer rounded-lg hover:bg-white/5 transition" title="Joindre un fichier">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                                    </svg>
+                                </label>
+                                <input type="file" id="file-upload" name="file" class="hidden" 
+                                       accept="image/*,.pdf,.doc,.docx,.mp3,.mp4,.txt,.wav"
+                                       onchange="handleFileSelect(event)">
                             </div>
                             
-                            <button 
-                                type="submit" 
-                                id="send-btn"
-                                class="px-4 py-2 bg-linear-to-r from-brand to-cyan-500 text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <span>Envoyer</span>
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <button type="submit" id="send-btn" 
+                                    class="bg-brand hover:bg-blue-600 text-white p-3 rounded-2xl flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition shadow-lg hover:shadow-brand/20">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
                                 </svg>
                             </button>
                         </div>
-                        
-                        <div class="text-center text-xs text-gray-600">
-                            L'IA peut parfois faire des erreurs. Vérifiez toujours les informations importantes.
+
+                        <div class="flex items-center justify-between mt-2 px-1">
+                            <span id="file-info" class="text-xs text-gray-500 hidden"></span>
+                            <span id="char-count" class="text-xs text-gray-500 ml-auto">0/4000</span>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
 
-        <!-- Colonne droite : Historique et filtres -->
-        <div class="space-y-6">
-            <!-- Historique récent -->
-            <div class="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
-                <div class="bg-linear-to-r from-brand/20 to-brand/10 border-b border-gray-800 p-4">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-base font-bold text-white">📚 Historique récent</h3>
-                        <span class="text-xs text-gray-400">{{ $conversations->count() }} conversations</span>
+        <!-- Panneau latéral - Historique scientifique -->
+        <div class="glass-card rounded-3xl overflow-hidden">
+            <div class="p-4 border-b border-white/5">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-semibold flex items-center gap-2">
+                        <svg class="w-5 h-5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Historique des analyses
+                    </h3>
+                    <span class="text-xs bg-white/5 px-2 py-1 rounded-full">
+                        {{ $conversations->total() }}
+                    </span>
+                </div>
+            </div>
+            
+            <div class="overflow-y-auto max-h-[calc(600px-80px)]">
+                @forelse($conversations as $conv)
+                    <a href="{{ route('ai.assistant', ['conversation' => $conv->id]) }}" 
+                       class="block p-4 border-b border-white/5 hover:bg-white/5 transition group {{ $activeConversation && $activeConversation->id === $conv->id ? 'bg-brand/10 border-l-4 border-l-brand' : '' }}">
+                        <div class="flex items-start gap-3">
+                            <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-sm">
+                                {{ $conv->has_attachment ? ($conv->isImage() ? '🖼️' : ($conv->isPdf() ? '📕' : '📎')) : '💬' }}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-white truncate group-hover:text-brand transition">
+                                    {{ Str::limit($conv->user_message, 30) }}
+                                </p>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <span class="text-xs text-gray-500">
+                                        {{ $conv->created_at->diffForHumans() }}
+                                    </span>
+                                    @if($conv->has_attachment)
+                                        <span class="text-xs px-1.5 py-0.5 bg-white/5 rounded-full">📎</span>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                @empty
+                    <div class="p-8 text-center">
+                        <div class="w-16 h-16 mx-auto mb-3 bg-white/5 rounded-full flex items-center justify-center">
+                            <svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                        </div>
+                        <p class="text-gray-400 text-sm">Aucune conversation</p>
+                        <p class="text-xs text-gray-600 mt-1">Commencez une nouvelle analyse</p>
                     </div>
-                </div>
-                
-                <div class="overflow-y-auto" style="max-height: 350px;">
-                    @if($conversations->count() > 0)
-                        <div class="divide-y divide-gray-800">
-                            @foreach($conversations->take(10) as $conv)
-                                <a href="{{ route('ai.assistant', ['conversation_id' => $conv->id]) }}" 
-                                   class="block p-3 hover:bg-gray-800/50 transition {{ isset($conversation) && $conversation->id == $conv->id ? 'bg-brand/10 border-l-2 border-brand' : '' }}">
-                                    <div class="flex items-start gap-3">
-                                        <div class="flex-shrink-0">
-                                            <div class="w-8 h-8 rounded-full bg-linear-to-r from-brand/20 to-cyan-400/20 flex items-center justify-center">
-                                                @if($conv->context == 'lesson_help')
-                                                    <svg class="w-4 h-4 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                                                    </svg>
-                                                @else
-                                                    <svg class="w-4 h-4 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-                                                    </svg>
-                                                @endif
-                                            </div>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-sm font-medium text-white truncate">
-                                                {{ Str::limit($conv->user_message, 50) }}
-                                            </p>
-                                            <div class="flex items-center gap-2 mt-1">
-                                                <span class="text-xs px-2 py-0.5 rounded-full bg-gray-800 text-gray-400">
-                                                    {{ $conv->created_at->diffForHumans() }}
-                                                </span>
-                                                @if($conv->lesson)
-                                                    <span class="text-xs px-2 py-0.5 rounded-full bg-brand/20 text-brand truncate max-w-[80px]">
-                                                        {{ Str::limit($conv->lesson->title, 10) }}
-                                                    </span>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </div>
-                                </a>
-                            @endforeach
-                        </div>
-                        
-                        @if($conversations->count() > 10)
-                            <div class="p-3 text-center border-t border-gray-800">
-                                <span class="text-xs text-gray-500">
-                                    Et {{ $conversations->count() - 10 }} conversations de plus...
-                                </span>
-                            </div>
-                        @endif
-                    @else
-                        <div class="p-6 text-center">
-                            <div class="w-12 h-12 mx-auto rounded-full bg-gray-800 flex items-center justify-center mb-3">
-                                <svg class="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-                                </svg>
-                            </div>
-                            <p class="text-gray-400 text-sm">Aucune conversation</p>
-                            <p class="text-xs text-gray-500 mt-1">Commencez par poser une question !</p>
-                        </div>
-                    @endif
-                </div>
+                @endforelse
             </div>
-
-            <!-- Filtres rapides -->
-            <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4">
-                <h4 class="text-base font-bold text-white mb-3">🔍 Filtrer</h4>
-                <div class="space-y-2">
-                    <a href="{{ route('ai.assistant') }}" 
-                       class="flex items-center justify-between p-2 rounded-lg {{ !request()->has('context') ? 'bg-brand/20 border border-brand/30' : 'hover:bg-gray-800 border border-gray-700' }} transition-all">
-                        <span class="text-sm {{ !request()->has('context') ? 'text-white' : 'text-gray-300' }}">Toutes</span>
-                        <span class="text-xs px-2 py-0.5 rounded-full bg-gray-800 text-gray-300">{{ $conversations->total() }}</span>
-                    </a>
-                    <a href="{{ route('ai.assistant', ['context' => 'lesson_help']) }}" 
-                       class="flex items-center justify-between p-2 rounded-lg {{ request('context') == 'lesson_help' ? 'bg-brand/20 border border-brand/30' : 'hover:bg-gray-800 border border-gray-700' }} transition-all">
-                        <span class="text-sm {{ request('context') == 'lesson_help' ? 'text-white' : 'text-gray-300' }}">Aide leçons</span>
-                        <span class="text-xs px-2 py-0.5 rounded-full bg-gray-800 text-gray-300">{{ $conversations->where('context', 'lesson_help')->count() }}</span>
-                    </a>
-                    <a href="{{ route('ai.assistant', ['context' => 'general_question']) }}" 
-                       class="flex items-center justify-between p-2 rounded-lg {{ request('context') == 'general_question' ? 'bg-brand/20 border border-brand/30' : 'hover:bg-gray-800 border border-gray-700' }} transition-all">
-                        <span class="text-sm {{ request('context') == 'general_question' ? 'text-white' : 'text-gray-300' }}">Questions générales</span>
-                        <span class="text-xs px-2 py-0.5 rounded-full bg-gray-800 text-gray-300">{{ $conversations->where('context', 'general_question')->count() }}</span>
-                    </a>
+            
+            @if($conversations->hasPages())
+                <div class="p-4 border-t border-white/5">
+                    {{ $conversations->links() }}
                 </div>
-            </div>
+            @endif
+        </div>
+    </div>
 
-            <!-- Informations IA -->
-            <div class="bg-linear-to-r from-brand/10 to-cyan-400/10 border border-brand/20 rounded-2xl p-4">
-                <h4 class="text-base font-bold text-white mb-2">ℹ️ À propos</h4>
-                <ul class="space-y-2 text-xs text-gray-300">
-                    <li class="flex items-center gap-2">
-                        <div class="w-1.5 h-1.5 bg-brand rounded-full"></div>
-                        <span>Spécialisé programme RDC</span>
-                    </li>
-                    <li class="flex items-center gap-2">
-                        <div class="w-1.5 h-1.5 bg-cyan-400 rounded-full"></div>
-                        <span>Données pédagogiques vérifiées</span>
-                    </li>
-                    <li class="flex items-center gap-2">
-                        <div class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div>
-                        <span>Adapté niveau secondaire</span>
-                    </li>
-                </ul>
+    <!-- Tags scientifiques flottants -->
+    <div class="hidden lg:block">
+        <div class="fixed left-4 top-1/2 transform -translate-y-1/2 space-y-2">
+            <div class="glass px-3 py-2 rounded-full text-xs flex items-center gap-2 animate-pulse">
+                <span class="text-brand">⚛️</span> H₂O
+            </div>
+            <div class="glass px-3 py-2 rounded-full text-xs flex items-center gap-2">
+                <span class="text-green-400">🧪</span> C₆H₁₂O₆
+            </div>
+            <div class="glass px-3 py-2 rounded-full text-xs flex items-center gap-2">
+                <span class="text-purple-400">🔬</span> CO₂
+            </div>
+        </div>
+        
+        <div class="fixed right-4 top-1/2 transform -translate-y-1/2 space-y-2">
+            <div class="glass px-3 py-2 rounded-full text-xs flex items-center gap-2">
+                <span class="text-yellow-400">📊</span> pH 7.0
+            </div>
+            <div class="glass px-3 py-2 rounded-full text-xs flex items-center gap-2">
+                <span class="text-blue-400">🌡️</span> 25°C
+            </div>
+            <div class="glass px-3 py-2 rounded-full text-xs flex items-center gap-2">
+                <span class="text-red-400">⚡</span> 1.23V
             </div>
         </div>
     </div>
 </div>
 
+<!-- Modal pour images -->
+<div id="imageModal" class="fixed inset-0 bg-black/90 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeImageModal()">
+    <div class="relative max-w-4xl max-h-full">
+        <img id="modalImage" src="" class="max-w-full max-h-[90vh] rounded-2xl border border-white/10" alt="">
+        <button class="absolute top-4 right-4 text-white bg-black/50 rounded-full p-2 hover:bg-black/75 transition border border-white/20" onclick="closeImageModal()">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </button>
+    </div>
+</div>
+
 @push('scripts')
 <script>
-    let currentConversationId = {{ isset($conversation) ? $conversation->id : 'null' }};
+    let selectedFile = null;
+    let isProcessing = false;
 
-    function sendMessage(event) {
-        event.preventDefault();
+    function autoResize(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+        updateCharCount();
+    }
+
+    function handleFileSelect(e) {
+        const file = e.target.files[0];
+        if (!file) return;
         
-        console.log('=== DÉBUT ENVOI MESSAGE ===');
-        
-        const input = document.getElementById('chat-input');
-        const message = input.value.trim();
-        const sendBtn = document.getElementById('send-btn');
-        const messagesContainer = document.getElementById('chat-messages');
-        
-        console.log('Message:', message);
-        
-        if (!message) {
-            console.error('Message vide');
+        if (file.size > 20 * 1024 * 1024) {
+            alert('Fichier trop volumineux (max 20MB)');
+            e.target.value = '';
             return;
         }
         
-        // Désactiver le bouton
-        sendBtn.disabled = true;
-        sendBtn.innerHTML = '<span>Envoi...</span><svg class="animate-spin h-4 w-4 ml-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
-        
-        // Ajouter le message utilisateur immédiatement
-        const userHtml = `
-            <div class="flex items-start justify-end animate-fade-in">
-                <div class="flex-1 max-w-3xl">
-                    <div class="bg-linear-to-r from-brand to-cyan-500 text-white rounded-2xl p-3">
-                        <p class="text-sm font-medium">${escapeHtml(message)}</p>
-                    </div>
-                    <div class="text-xs text-gray-500 mt-1 text-right">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
-                </div>
-                <div class="flex-shrink-0 ml-2">
-                    <div class="w-8 h-8 rounded-full bg-linear-to-r from-cyan-400 to-emerald-500 flex items-center justify-center">
-                        <span class="text-xs font-bold text-white">VO</span>
-                    </div>
-                </div>
-            </div>
-        `;
-        messagesContainer.insertAdjacentHTML('beforeend', userHtml);
-        
-        input.value = '';
-        updateCharCount();
-        input.style.height = 'auto';
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        
-        // Envoyer à l'API
-        const url = '{{ route("ai.ask") }}';
-        console.log('URL:', url);
-        
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify({
-                message: message,
-                context: 'general_question',
-                conversation_id: currentConversationId
-            })
-        })
-        .then(response => {
-            console.log('Status HTTP:', response.status);
-            if (!response.ok) {
-                return response.text().then(text => {
-                    console.error('Erreur serveur:', text.substring(0, 500));
-                    throw new Error('Erreur ' + response.status);
-                });
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Données reçues:', data);
-            
-            if (data.success && data.response) {
-                // Réponse IA
-                const aiHtml = `
-                    <div class="flex items-start animate-fade-in">
-                        <div class="flex-shrink-0 mr-2">
-                            <div class="w-8 h-8 rounded-full bg-linear-to-r from-brand to-cyan-400 flex items-center justify-center">
-                                <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-                                </svg>
-                            </div>
-                        </div>
-                        <div class="flex-1 max-w-3xl">
-                            <div class="bg-gray-800/50 border border-gray-700 rounded-2xl p-3">
-                                <div class="prose prose-invert max-w-none text-gray-300 text-sm">
-                                    ${formatResponse(data.response)}
-                                </div>
-                            </div>
-                            <div class="text-xs text-gray-500 mt-1">
-                                ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                                ${data.processing_time ? `• ${data.processing_time}ms` : ''}
-                            </div>
-                        </div>
-                    </div>
-                `;
-                messagesContainer.insertAdjacentHTML('beforeend', aiHtml);
-                
-                if (data.conversation_id) {
-                    currentConversationId = data.conversation_id;
-                    console.log('Nouveau conversation_id:', currentConversationId);
-                }
-            } else {
-                throw new Error(data.message || 'Réponse invalide du serveur');
-            }
-        })
-        .catch(error => {
-            console.error('ERREUR:', error);
-            const errorHtml = `
-                <div class="flex items-start animate-fade-in">
-                    <div class="flex-shrink-0 mr-2">
-                        <div class="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="flex-1">
-                        <div class="bg-red-500/10 border border-red-500/30 rounded-2xl p-3">
-                            <p class="text-red-300 text-sm">Erreur: ${escapeHtml(error.message)}</p>
-                            <button onclick="location.reload()" class="text-xs text-red-400 underline mt-1">Recharger la page</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            messagesContainer.insertAdjacentHTML('beforeend', errorHtml);
-        })
-        .finally(() => {
-            sendBtn.disabled = false;
-            sendBtn.innerHTML = '<span>Envoyer</span><svg class="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>';
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        });
+        selectedFile = file;
+        updatePreview();
     }
 
-    function clearChat() {
-        if (confirm('Nouvelle conversation ?')) {
-            currentConversationId = null;
-            window.location.href = '{{ route("ai.assistant") }}';
+    function updatePreview() {
+        const preview = document.getElementById('file-preview');
+        const content = document.getElementById('preview-content');
+        const fileName = document.getElementById('file-name');
+        const fileSize = document.getElementById('file-size');
+        
+        if (!selectedFile) {
+            preview.classList.add('hidden');
+            return;
+        }
+
+        preview.classList.remove('hidden');
+        
+        const name = selectedFile.name.length > 30 
+            ? selectedFile.name.substring(0, 27) + '...' 
+            : selectedFile.name;
+        fileName.textContent = name;
+        
+        const size = selectedFile.size / 1024 / 1024;
+        fileSize.textContent = size.toFixed(2) + ' MB';
+
+        if (selectedFile.type.startsWith('image/')) {
+            const url = URL.createObjectURL(selectedFile);
+            content.innerHTML = `<img src="${url}" class="h-12 w-12 object-cover rounded-lg border border-white/10" alt="">`;
+        } else {
+            let icon = '📄';
+            if (selectedFile.type.includes('pdf')) icon = '📕';
+            else if (selectedFile.type.includes('audio')) icon = '🎵';
+            else if (selectedFile.type.includes('video')) icon = '🎬';
+            content.innerHTML = `<span class="text-2xl">${icon}</span>`;
         }
     }
 
-    function suggestQuestion(question) {
-        document.getElementById('chat-input').value = question;
-        document.getElementById('chat-input').focus();
-        updateCharCount();
+    function clearFile() {
+        selectedFile = null;
+        document.getElementById('file-upload').value = '';
+        document.getElementById('file-preview').classList.add('hidden');
+    }
+
+    function openImageModal(src) {
+        document.getElementById('modalImage').src = src;
+        document.getElementById('imageModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeImageModal() {
+        document.getElementById('imageModal').classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+
+    async function sendMessage(e) {
+        e.preventDefault();
+        
+        if (isProcessing) return;
+        
+        const input = document.getElementById('message-input');
+        const message = input.value.trim();
+        const btn = document.getElementById('send-btn');
+        const messages = document.getElementById('chat-messages');
+        
+        if (!message && !selectedFile) {
+            alert('Veuillez entrer un message ou joindre un fichier');
+            return;
+        }
+        
+        isProcessing = true;
+        btn.disabled = true;
+        btn.innerHTML = '<svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+
+        // Afficher le message utilisateur
+        let userHtml = `<div class="flex justify-end mb-4"><div class="max-w-[85%]"><div class="message-user p-4">`;
+        
+        if (message) {
+            userHtml += `<p class="text-sm text-white">${escapeHtml(message)}</p>`;
+        }
+        
+        if (selectedFile) {
+            userHtml += `<div class="mt-3">`;
+            if (selectedFile.type.startsWith('image/')) {
+                const url = URL.createObjectURL(selectedFile);
+                userHtml += `<img src="${url}" class="max-h-24 rounded-lg border border-white/20" alt="">`;
+            } else {
+                userHtml += `<div class="bg-white/10 rounded-lg p-2 text-sm flex items-center gap-2">`;
+                userHtml += `<span>📎</span>`;
+                userHtml += `<span class="truncate">${escapeHtml(selectedFile.name)}</span>`;
+                userHtml += `</div>`;
+            }
+            userHtml += `</div>`;
+        }
+        
+        userHtml += `</div></div></div>`;
+        
+        messages.insertAdjacentHTML('beforeend', userHtml);
+        
+        input.value = '';
+        autoResize(input);
+        messages.scrollTop = messages.scrollHeight;
+
+        const formData = new FormData();
+        formData.append('message', message);
+        if (selectedFile) {
+            formData.append('file', selectedFile);
+        }
+
+        try {
+            const res = await fetch('{{ route("ai.ask") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: formData
+            });
+            
+            const data = await res.json();
+            
+            if (data.success) {
+                messages.insertAdjacentHTML('beforeend', `
+                    <div class="flex justify-start mb-4">
+                        <div class="max-w-[85%]">
+                            <div class="message-ai p-4">
+                                <div class="prose prose-invert max-w-none text-sm">
+                                    ${formatText(data.response)}
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 text-xs text-gray-500 mt-1.5">
+                                <span class="text-brand">🔬 Assistant IA</span>
+                                <span>•</span>
+                                <span>${data.processing_time ? `Analyse en ${data.processing_time}ms` : ''}</span>
+                            </div>
+                        </div>
+                    </div>
+                `);
+                
+                if (data.conversation_id) {
+                    const url = new URL(window.location);
+                    url.searchParams.set('conversation', data.conversation_id);
+                    window.history.pushState({}, '', url);
+                }
+            } else {
+                throw new Error(data.message || 'Erreur lors de l\'analyse');
+            }
+        } catch (err) {
+            messages.insertAdjacentHTML('beforeend', `
+                <div class="flex justify-center mb-4">
+                    <div class="bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl p-3 text-sm">
+                        ⚠️ ${escapeHtml(err.message)}
+                    </div>
+                </div>
+            `);
+        } finally {
+            isProcessing = false;
+            btn.disabled = false;
+            btn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>';
+            clearFile();
+            messages.scrollTop = messages.scrollHeight;
+        }
     }
 
     function escapeHtml(text) {
@@ -490,52 +631,35 @@
         return div.innerHTML;
     }
 
-    function formatResponse(text) {
+    function formatText(text) {
         if (!text) return '';
-        
-        // Échapper d'abord
-        let formatted = escapeHtml(text);
-        
-        // Formater le markdown
-        formatted = formatted
+        return escapeHtml(text)
             .replace(/\n/g, '<br>')
-            .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em class="text-cyan-300">$1</em>')
-            .replace(/### (.*?)<br>/g, '<h3 class="text-base font-bold text-white mt-3 mb-1">$1</h3>')
-            .replace(/## (.*?)<br>/g, '<h2 class="text-lg font-bold text-white mt-4 mb-2">$1</h2>')
-            .replace(/# (.*?)<br>/g, '<h1 class="text-xl font-bold text-white mt-5 mb-2">$1</h1>')
-            .replace(/\- (.*?)<br>/g, '<div class="flex items-start gap-2 mb-1"><span class="text-brand mt-1">•</span><span>$1</span></div>');
-        
-        return formatted;
+            .replace(/\*\*(.*?)\*\*/g, '<strong class="text-brand">$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em class="text-gray-300">$1</em>')
+            .replace(/`(.*?)`/g, '<code class="bg-white/5 px-1 rounded border border-white/10">$1</code>');
     }
 
     function updateCharCount() {
-        const input = document.getElementById('chat-input');
-        const count = document.getElementById('char-count');
-        count.textContent = input.value.length;
-        count.classList.toggle('text-red-500', input.value.length > 1800);
+        const len = document.getElementById('message-input').value.length;
+        document.getElementById('char-count').textContent = `${len}/4000`;
     }
 
-    // Auto-resize
-    document.getElementById('chat-input').addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    // Initialisation
+    document.addEventListener('DOMContentLoaded', function() {
+        const textarea = document.getElementById('message-input');
+        textarea.addEventListener('input', function() {
+            autoResize(this);
+        });
+        
         updateCharCount();
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeImageModal();
+            }
+        });
     });
-
-    updateCharCount();
 </script>
-
-<style>
-    .animate-fade-in {
-        animation: fadeIn 0.3s ease-out;
-    }
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    .prose-invert { color: #d1d5db; }
-    .prose-invert strong { color: white; }
-</style>
 @endpush
 @endsection
